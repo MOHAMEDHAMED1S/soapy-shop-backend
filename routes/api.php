@@ -278,5 +278,8 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
 
 // Admin Auth (Public)
 Route::prefix('v1/admin')->group(function () {
+    // CORS preflight for admin login
+    Route::options('/login', function () { return response('', 204); });
+
     Route::post('/login', [\App\Http\Controllers\Api\Admin\AuthController::class, 'login']);
 });
