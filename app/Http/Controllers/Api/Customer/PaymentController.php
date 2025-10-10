@@ -6,17 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\PaymentService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
     protected $paymentService;
+    protected $notificationService;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(PaymentService $paymentService, NotificationService $notificationService)
     {
         $this->paymentService = $paymentService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -286,10 +290,10 @@ class PaymentController extends Controller
     public function handleError(Request $request)
     {
         try {
-            \Log::info('Payment error callback received', $request->all());
+            Log::info('Payment error callback received', $request->all());
 
             // Log the error for debugging
-            \Log::error('Payment error occurred', [
+            Log::error('Payment error occurred', [
                 'request_data' => $request->all(),
                 'headers' => $request->headers->all()
             ]);
@@ -301,7 +305,7 @@ class PaymentController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error handling payment error: ' . $e->getMessage());
+            Log::error('Error handling payment error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error processing payment error',
@@ -321,7 +325,7 @@ class PaymentController extends Controller
             $orderId = $request->get('order_id') ?? $request->get('UserDefinedField');
             
             // Log the request for debugging
-            \Log::info('MyFatoorah Success Callback', [
+            Log::info('MyFatoorah Success Callback', [
                 'all_params' => $request->all(),
                 'paymentId' => $paymentId,
                 'orderId' => $orderId
@@ -333,35 +337,35 @@ class PaymentController extends Controller
 
             // If we don't have orderId from UserDefinedField, try to find it by payment
             if (!$orderId) {
-                \Log::info('Searching for payment with paymentId: ' . $paymentId);
+                Log::info('Searching for payment with paymentId: ' . $paymentId);
                 
                 // First try to find by invoice_reference (InvoiceId from MyFatoorah)
                 $payment = Payment::where('invoice_reference', $paymentId)->first();
                 if ($payment) {
-                    \Log::info('Found payment by invoice_reference: ' . $payment->id);
+                    Log::info('Found payment by invoice_reference: ' . $payment->id);
                     $orderId = $payment->order_id;
                 } else {
                     // Try to find by invoice_id in response_raw JSON
                     $payment = Payment::whereRaw("JSON_EXTRACT(response_raw, '$.InvoiceId') = ?", [$paymentId])->first();
                     if ($payment) {
-                        \Log::info('Found payment by InvoiceId in response_raw: ' . $payment->id);
+                        Log::info('Found payment by InvoiceId in response_raw: ' . $payment->id);
                         $orderId = $payment->order_id;
                     } else {
                         // Try to find by payment_id in response_raw JSON (for different payment methods)
                         $payment = Payment::whereRaw("JSON_EXTRACT(response_raw, '$.PaymentId') = ?", [$paymentId])->first();
                         if ($payment) {
-                            \Log::info('Found payment by PaymentId in response_raw: ' . $payment->id);
+                            Log::info('Found payment by PaymentId in response_raw: ' . $payment->id);
                             $orderId = $payment->order_id;
                         } else {
                             // Try to find by any numeric field in response_raw that matches
                             $payment = Payment::whereRaw("JSON_EXTRACT(response_raw, '$.Data.InvoiceId') = ?", [$paymentId])->first();
                             if ($payment) {
-                                \Log::info('Found payment by Data.InvoiceId in response_raw: ' . $payment->id);
+                                Log::info('Found payment by Data.InvoiceId in response_raw: ' . $payment->id);
                                 $orderId = $payment->order_id;
                             } else {
                                 // Log all recent payments for debugging
                                 $recentPayments = Payment::latest()->take(3)->get(['id', 'order_id', 'invoice_reference', 'response_raw']);
-                                \Log::info('Recent payments for debugging:', $recentPayments->toArray());
+                                Log::info('Recent payments for debugging:', $recentPayments->toArray());
                             }
                         }
                     }
@@ -369,7 +373,7 @@ class PaymentController extends Controller
             }
 
             if (!$orderId) {
-                \Log::error('Could not find order for payment', [
+                Log::error('Could not find order for payment', [
                     'paymentId' => $paymentId,
                     'all_params' => $request->all()
                 ]);
@@ -378,7 +382,7 @@ class PaymentController extends Controller
                 // This is a fallback for when MyFatoorah sends different payment IDs
                 $recentPayment = Payment::latest()->first();
                 if ($recentPayment) {
-                    \Log::info('Using recent payment as fallback: ' . $recentPayment->id);
+                    Log::info('Using recent payment as fallback: ' . $recentPayment->id);
                     $orderId = $recentPayment->order_id;
                 } else {
                     // If no payments exist at all, redirect to generic success
@@ -397,7 +401,7 @@ class PaymentController extends Controller
             $paymentStatus = $this->paymentService->verifyPayment($invoiceId);
 
             if (!$paymentStatus['success']) {
-                \Log::warning('Payment verification failed, but proceeding with success', [
+                Log::warning('Payment verification failed, but proceeding with success', [
                     'order_id' => $order->id,
                     'order_number' => $order->order_number,
                     'invoice_id' => $invoiceId,
@@ -431,20 +435,8 @@ class PaymentController extends Controller
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
                 
-                // Create admin notification
-                $notificationService = new \App\Services\NotificationService();
-                $notificationService->createNotification(
-                    'new_payment',
-                    'تم دفع طلب جديد',
-                    "تم دفع الطلب رقم {$order->order_number} بمبلغ {$order->total_amount} {$order->currency}",
-                    [
-                        'order_id' => $order->id,
-                        'order_number' => $order->order_number,
-                        'amount' => $order->total_amount,
-                        'currency' => $order->currency,
-                        'payment_method' => $order->payment->payment_method
-                    ]
-                );
+                // Create order notification using NotificationService
+                $this->notificationService->createOrderNotification($order, 'order_paid');
             } elseif ($paymentStatus['data']['InvoiceStatus'] === 'Failed') {
                 $order->update(['status' => 'pending']);
             }
@@ -456,7 +448,7 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Payment success callback error: ' . $e->getMessage());
+            Log::error('Payment success callback error: ' . $e->getMessage());
             return redirect()->away(config('app.frontend_url') . '/payment/failure?error=processing_error');
         }
     }
@@ -485,7 +477,7 @@ class PaymentController extends Controller
             return redirect()->away(config('app.frontend_url') . '/payment/failure?error=' . $error);
 
         } catch (\Exception $e) {
-            \Log::error('Payment failure callback error: ' . $e->getMessage());
+            Log::error('Payment failure callback error: ' . $e->getMessage());
             return redirect()->away(config('app.frontend_url') . '/payment/failure?error=processing_error');
         }
     }

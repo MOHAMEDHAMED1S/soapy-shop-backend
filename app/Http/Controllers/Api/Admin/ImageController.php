@@ -68,7 +68,7 @@ class ImageController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            \Log::error('Image upload error', [
+            Log::error('Image upload error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -151,7 +151,7 @@ class ImageController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            \Log::error('Multiple images upload error', [
+            Log::error('Multiple images upload error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

@@ -5,12 +5,19 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\AdminNotification;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * Display a listing of orders for admin
      */
@@ -170,18 +177,7 @@ class OrderController extends Controller
 
             // Create admin notification for important status changes
             if (in_array($newStatus, ['paid', 'shipped', 'delivered'])) {
-                AdminNotification::create([
-                    'type' => "order_{$newStatus}",
-                    'payload' => [
-                        'order_id' => $order->id,
-                        'order_number' => $order->order_number,
-                        'customer_name' => $order->customer_name,
-                        'total_amount' => $order->total_amount,
-                        'status' => $newStatus,
-                        'previous_status' => $oldStatus
-                    ],
-                    'created_at' => now()
-                ]);
+                $this->notificationService->createOrderNotification($order, "order_{$newStatus}");
             }
 
             DB::commit();
