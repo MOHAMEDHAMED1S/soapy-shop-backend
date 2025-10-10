@@ -65,6 +65,46 @@ Route::prefix('v1')->group(function () {
 
 // Admin APIs (Protected with JWT)
 Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () {
+    // OPTIONS routes for CORS preflight requests
+    Route::options('/me', function () { return response('', 204); });
+    Route::options('/orders', function () { return response('', 204); });
+    Route::options('/orders/statistics', function () { return response('', 204); });
+    Route::options('/orders/export', function () { return response('', 204); });
+    Route::options('/orders/{id}', function () { return response('', 204); });
+    Route::options('/orders/{id}/update-status', function () { return response('', 204); });
+    Route::options('/order-management', function () { return response('', 204); });
+    Route::options('/order-management/statistics', function () { return response('', 204); });
+    Route::options('/order-management/export', function () { return response('', 204); });
+    Route::options('/order-management/search', function () { return response('', 204); });
+    Route::options('/order-management/{id}', function () { return response('', 204); });
+    Route::options('/order-management/{id}/timeline', function () { return response('', 204); });
+    Route::options('/order-management/{id}/update-status', function () { return response('', 204); });
+    Route::options('/order-management/bulk-update-status', function () { return response('', 204); });
+    Route::options('/payments', function () { return response('', 204); });
+    Route::options('/payments/statistics', function () { return response('', 204); });
+    Route::options('/payments/{id}', function () { return response('', 204); });
+    Route::options('/payments/{id}/retry', function () { return response('', 204); });
+    Route::options('/webhook-logs', function () { return response('', 204); });
+    Route::options('/webhook-logs/{id}', function () { return response('', 204); });
+    Route::options('/webhooks/logs', function () { return response('', 204); });
+    Route::options('/webhooks/statistics', function () { return response('', 204); });
+    Route::options('/webhooks/{id}/retry', function () { return response('', 204); });
+    Route::options('/products', function () { return response('', 204); });
+    Route::options('/products/statistics', function () { return response('', 204); });
+    Route::options('/products/bulk-update', function () { return response('', 204); });
+    Route::options('/products/export', function () { return response('', 204); });
+    Route::options('/products/category/{categoryId}', function () { return response('', 204); });
+    Route::options('/products/{id}', function () { return response('', 204); });
+    Route::options('/products/{id}/toggle-availability', function () { return response('', 204); });
+    Route::options('/products/{id}/duplicate', function () { return response('', 204); });
+    Route::options('/products/{id}/images', function () { return response('', 204); });
+    Route::options('/categories', function () { return response('', 204); });
+    Route::options('/categories/tree', function () { return response('', 204); });
+    Route::options('/categories/statistics', function () { return response('', 204); });
+    Route::options('/categories/{id}', function () { return response('', 204); });
+    Route::options('/categories/{id}/toggle-status', function () { return response('', 204); });
+    Route::post('/categories/update-sort-order', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'updateSortOrder']);
+    
     // Auth
     Route::get('/me', [\App\Http\Controllers\Api\Admin\AuthController::class, 'me']);
     
@@ -121,7 +161,32 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::put('/categories/{id}', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'destroy']);
     Route::put('/categories/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'toggleStatus']);
-    Route::post('/categories/update-sort-order', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'updateSortOrder']);
+    oute::post('/categories/update-sort-order', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'updateSortOrder']);
+    Route::options('/categories/update-sort-order', function () { return response('', 204); });
+    
+    // OPTIONS routes for notifications
+    Route::options('/notifications', function () { return response('', 204); });
+    Route::options('/notifications/statistics', function () { return response('', 204); });
+    Route::options('/notifications/test', function () { return response('', 204); });
+    Route::options('/notifications/preferences', function () { return response('', 204); });
+    Route::options('/notifications/mark-all-read', function () { return response('', 204); });
+    Route::options('/notifications/delete-read', function () { return response('', 204); });
+    Route::options('/notifications/{id}', function () { return response('', 204); });
+    Route::options('/notifications/{id}/read', function () { return response('', 204); });
+    Route::options('/notifications/{id}/unread', function () { return response('', 204); });
+    
+    // OPTIONS routes for images
+    Route::options('/images', function () { return response('', 204); });
+    Route::options('/images/folders', function () { return response('', 204); });
+    Route::options('/images/statistics', function () { return response('', 204); });
+    Route::options('/images/{path}', function () { return response('', 204); });
+    Route::options('/images/{path}/serve', function () { return response('', 204); });
+    Route::options('/images/{path}/resize', function () { return response('', 204); });
+    Route::options('/images/folders/{folderName}', function () { return response('', 204); });
+    
+    // OPTIONS routes for dashboard
+    Route::options('/dashboard/overview', function () { return response('', 204); });
+    Route::options('/dashboard/sales-analytics', function () { return response('', 204); });
     
     // Notifications
     Route::get('/notifications', [\App\Http\Controllers\Api\Admin\NotificationController::class, 'index']);
