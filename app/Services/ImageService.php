@@ -248,7 +248,7 @@ class ImageService
     public function getImagesList(
         string $folder = '',
         int $perPage = 20,
-        string $search = null,
+        ?string $search = null,
         string $sortBy = 'created_at',
         string $sortOrder = 'desc'
     ): array {
