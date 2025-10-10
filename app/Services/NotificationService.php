@@ -63,7 +63,7 @@ class NotificationService
                 'priority' => 'medium'
             ],
             'order_paid' => [
-                'title' => 'تم دفع الطلب',
+                'title' => 'طلب جديد',
                 'message' => "تم دفع الطلب رقم {$order->order_number} بنجاح",
                 'priority' => 'high'
             ],
