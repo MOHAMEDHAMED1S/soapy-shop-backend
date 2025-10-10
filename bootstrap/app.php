@@ -13,7 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
        ->withMiddleware(function (Middleware $middleware): void {
-           // Add CORS middleware to API routes
+           // Remove Laravel's built-in CORS middleware from global stack
+           $middleware->remove([
+               \Illuminate\Http\Middleware\HandleCors::class,
+           ]);
+           
+           // Add our custom CORS middleware to API routes
            $middleware->api(prepend: [
                \App\Http\Middleware\CorsMiddleware::class,
            ]);

@@ -137,6 +137,12 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::delete('/notifications/{id}', [\App\Http\Controllers\Api\Admin\NotificationController::class, 'destroy']);
     
     // Images
+    Route::options('/images/upload', function () {
+        return response('', 204);
+    });
+    Route::options('/images/upload-multiple', function () {
+        return response('', 204);
+    });
     Route::get('/images', [\App\Http\Controllers\Api\Admin\ImageController::class, 'index']);
     Route::get('/images/folders', [\App\Http\Controllers\Api\Admin\ImageController::class, 'folders']);
     Route::get('/images/statistics', [\App\Http\Controllers\Api\Admin\ImageController::class, 'statistics']);
