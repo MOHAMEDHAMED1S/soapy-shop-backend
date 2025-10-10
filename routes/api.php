@@ -283,3 +283,9 @@ Route::prefix('v1/admin')->group(function () {
 
     Route::post('/login', [\App\Http\Controllers\Api\Admin\AuthController::class, 'login']);
 });
+// OPTIONS routes for all admin endpoints
+Route::prefix('v1')->group(function () {
+    Route::options('{any}', function () {
+        return response('', 204);
+    })->where('any', '.*');
+});
