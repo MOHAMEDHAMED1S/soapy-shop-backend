@@ -39,26 +39,8 @@ class CorsMiddleware
      */
     private function getAllowedOrigin(Request $request): string
     {
-        $origin = $request->headers->get('Origin');
-        
-        $allowedOrigins = [
-            'http://localhost:8080',
-            'http://localhost:3000',
-            'http://localhost:5173',
-            'http://127.0.0.1:8080',
-            'http://127.0.0.1:3000',
-            'http://127.0.0.1:5173',
-            // Add production domains here when needed
-            'https://api.soapy-bubbles.com/',
-            'https://soapy-bubbles.com/',
-            'https://*.soapy-bubbles.com/'
-        ];
-
-        if (in_array($origin, $allowedOrigins)) {
-            return $origin;
-        }
-
-        // Default to first allowed origin if no match
-        return $allowedOrigins[0];
+        // Always return * to allow all origins for now
+        // This is a temporary solution for development
+        return '*';
     }
 }
