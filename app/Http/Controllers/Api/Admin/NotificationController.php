@@ -32,9 +32,11 @@ class NotificationController extends Controller
 
             // Filter by read status
             if ($request->has('read') && $request->read !== null) {
-                if ($request->read) {
+                $readValue = $request->read;
+                // Handle string values from URL parameters
+                if ($readValue === 'true' || $readValue === true || $readValue === '1' || $readValue === 1) {
                     $query->whereNotNull('read_at');
-                } else {
+                } elseif ($readValue === 'false' || $readValue === false || $readValue === '0' || $readValue === 0) {
                     $query->whereNull('read_at');
                 }
             }
