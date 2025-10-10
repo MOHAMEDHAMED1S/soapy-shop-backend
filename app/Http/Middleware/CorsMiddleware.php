@@ -54,7 +54,8 @@ class CorsMiddleware
             return $origin;
         }
         
-        // For development, allow all origins
-        return '*';
+        // When using credentials, we cannot use wildcard '*'
+        // Return the first allowed origin as fallback for development
+        return $allowedOrigins[0];
     }
 }
