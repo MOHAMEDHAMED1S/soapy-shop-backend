@@ -39,6 +39,23 @@ class CorsMiddleware
      */
     private function getAllowedOrigin(Request $request): string
     {
-        return 'http://localhost:8080';
+        $allowedOrigins = [
+            'http://localhost:8080',
+            'http://localhost:3000',
+            'http://127.0.0.1:8080',
+            'http://127.0.0.1:3000',
+            'https://soapy-bubbles.com',
+            'https://www.soapy-bubbles.com'
+        ];
+
+        $origin = $request->header('Origin');
+        
+        if (in_array($origin, $allowedOrigins)) {
+            return $origin;
+        }
+        
+        // When using credentials, we cannot use wildcard '*'
+        // Return the first allowed origin as fallback for development
+        return $allowedOrigins[0];
     }
 }
