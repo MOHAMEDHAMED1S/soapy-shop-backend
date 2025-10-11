@@ -116,6 +116,19 @@ class NotificationService
         // Send email for order_paid event
         if ($event === 'order_paid') {
             event(new \App\Events\OrderPaid($order));
+            
+            // Send confirmation email to customer
+            if ($order->customer && $order->customer->email) {
+                \Illuminate\Support\Facades\Mail::to($order->customer->email)
+                    ->send(new \App\Mail\CustomerOrderConfirmation($order));
+                    
+                \Illuminate\Support\Facades\Log::info('Customer order confirmation email sent', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'customer_email' => $order->customer->email,
+                    'customer_name' => $order->customer->name
+                ]);
+            }
         }
 
         return $notification;
