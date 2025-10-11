@@ -148,14 +148,14 @@ class ExportController extends Controller
                 ], 400);
             }
 
-            if (!$export->file_path || !Storage::exists($export->file_path)) {
+            if (!$export->file_path || !Storage::disk('public')->exists('exports/' . basename($export->file_path))) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Export file not found'
                 ], 404);
             }
 
-            return Storage::download($export->file_path, $export->file_name);
+            return Storage::disk('public')->download('exports/' . basename($export->file_path), $export->file_name);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -225,8 +225,8 @@ class ExportController extends Controller
             }
 
             // Delete file if exists
-            if ($export->file_path && Storage::exists($export->file_path)) {
-                Storage::delete($export->file_path);
+            if ($export->file_path && Storage::disk('public')->exists('exports/' . basename($export->file_path))) {
+                Storage::disk('public')->delete('exports/' . basename($export->file_path));
             }
 
             // Delete export record
@@ -264,5 +264,53 @@ class ExportController extends Controller
                 'message' => 'Failed to get export statistics: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * List exports (index)
+     */
+    public function index(Request $request): JsonResponse
+    {
+        return $this->listExports($request);
+    }
+
+    /**
+     * Show export details
+     */
+    public function show(int $exportId): JsonResponse
+    {
+        return $this->getExportStatus($exportId);
+    }
+
+    /**
+     * Get export status
+     */
+    public function getStatus(int $exportId): JsonResponse
+    {
+        return $this->getExportStatus($exportId);
+    }
+
+    /**
+     * Download export
+     */
+    public function download(int $exportId): StreamedResponse|JsonResponse
+    {
+        return $this->downloadExport($exportId);
+    }
+
+    /**
+     * Destroy export
+     */
+    public function destroy(int $exportId): JsonResponse
+    {
+        return $this->deleteExport($exportId);
+    }
+
+    /**
+     * Get statistics overview
+     */
+    public function getStatistics(): JsonResponse
+    {
+        return $this->getExportStats();
     }
 }

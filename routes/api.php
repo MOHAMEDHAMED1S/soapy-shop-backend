@@ -59,6 +59,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/discount-codes/{code}', [\App\Http\Controllers\Api\Customer\DiscountController::class, 'getCodeDetails']);
     Route::post('/discount-codes/validate', [\App\Http\Controllers\Api\Customer\DiscountController::class, 'validateCode']);
     
+    // Data Export System (Public)
+    Route::prefix('exports')->group(function () {
+        Route::post('/products', [\App\Http\Controllers\Api\ExportController::class, 'exportProducts']);
+        Route::post('/customers', [\App\Http\Controllers\Api\ExportController::class, 'exportCustomers']);
+        Route::post('/orders', [\App\Http\Controllers\Api\ExportController::class, 'exportOrders']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'show']);
+        Route::get('/{id}/download', [\App\Http\Controllers\Api\ExportController::class, 'download']);
+    });
+    
     // Webhooks
     Route::post('/webhooks/myfatoorah', [\App\Http\Controllers\Api\WebhookController::class, 'handleMyFatoorahWebhook'])->middleware('webhook');
     Route::post('/webhooks/test', [\App\Http\Controllers\Api\WebhookController::class, 'testWebhook'])->middleware('webhook');
@@ -270,31 +279,6 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::put('/users/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\UserController::class, 'toggleStatus']);
     Route::put('/users/{id}/change-password', [\App\Http\Controllers\Api\Admin\UserController::class, 'changePassword']);
     
-    // Data Export System
-    Route::prefix('exports')->group(function () {
-        // Export endpoints
-        Route::post('/products', [\App\Http\Controllers\Api\ExportController::class, 'exportProducts']);
-        Route::post('/customers', [\App\Http\Controllers\Api\ExportController::class, 'exportCustomers']);
-        Route::post('/orders', [\App\Http\Controllers\Api\ExportController::class, 'exportOrders']);
-        
-        // Export management
-        Route::get('/', [\App\Http\Controllers\Api\ExportController::class, 'index']);
-        Route::get('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'show']);
-        Route::get('/{id}/status', [\App\Http\Controllers\Api\ExportController::class, 'getStatus']);
-        Route::get('/{id}/download', [\App\Http\Controllers\Api\ExportController::class, 'download']);
-        Route::delete('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'destroy']);
-        Route::get('/statistics/overview', [\App\Http\Controllers\Api\ExportController::class, 'getStatistics']);
-        
-        // OPTIONS routes for CORS
-        Route::options('/products', function () { return response('', 204); });
-        Route::options('/customers', function () { return response('', 204); });
-        Route::options('/orders', function () { return response('', 204); });
-        Route::options('/', function () { return response('', 204); });
-        Route::options('/{id}', function () { return response('', 204); });
-        Route::options('/{id}/status', function () { return response('', 204); });
-        Route::options('/{id}/download', function () { return response('', 204); });
-        Route::options('/statistics/overview', function () { return response('', 204); });
-    });
     
     // Advanced Reporting System
     Route::prefix('reports')->group(function () {

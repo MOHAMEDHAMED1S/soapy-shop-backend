@@ -41,7 +41,7 @@ class ExportService
             $export->update([
                 'status' => 'completed',
                 'file_path' => $filePath,
-                'file_size' => Storage::disk('exports')->size($export->file_name),
+                'file_size' => $this->getFileSize($filePath),
                 'records_count' => count($data),
                 'completed_at' => now(),
             ]);
@@ -49,7 +49,7 @@ class ExportService
             return [
                 'success' => true,
                 'export_id' => $export->id,
-                'download_url' => url("/api/v1/admin/exports/{$export->id}/download"),
+                'download_url' => url("/api/v1/exports/{$export->id}/download"),
                 'file_name' => $export->file_name,
                 'file_path' => $filePath,
                 'records_count' => count($data),
@@ -256,7 +256,7 @@ class ExportService
             'data' => $data
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-        Storage::disk('exports')->put(basename($filePath), $jsonContent);
+        Storage::disk('public')->put('exports/' . basename($filePath), $jsonContent);
         return $filePath;
     }
 
@@ -266,7 +266,7 @@ class ExportService
     private function generateCsvFile(array $data, string $filePath): string
     {
         if (empty($data)) {
-            Storage::disk('exports')->put(basename($filePath), '');
+            Storage::disk('public')->put('exports/' . basename($filePath), '');
             return $filePath;
         }
 
@@ -284,7 +284,7 @@ class ExportService
         $tempFile = tempnam(sys_get_temp_dir(), 'export_csv_');
         $writer->save($tempFile);
 
-        Storage::disk('exports')->put(basename($filePath), file_get_contents($tempFile));
+        Storage::disk('public')->put('exports/' . basename($filePath), file_get_contents($tempFile));
         unlink($tempFile);
 
         return $filePath;
@@ -326,7 +326,7 @@ class ExportService
         $tempFile = tempnam(sys_get_temp_dir(), 'export_excel_');
         $writer->save($tempFile);
 
-        Storage::disk('exports')->put(basename($filePath), file_get_contents($tempFile));
+        Storage::disk('public')->put('exports/' . basename($filePath), file_get_contents($tempFile));
         unlink($tempFile);
 
         return $filePath;
@@ -394,5 +394,20 @@ class ExportService
                 ->pluck('count', 'format')
                 ->toArray(),
         ];
+    }
+
+    /**
+     * Get file size safely
+     */
+    private function getFileSize(string $filePath): ?int
+    {
+        try {
+            if (Storage::disk('public')->exists('exports/' . basename($filePath))) {
+                return Storage::disk('public')->size('exports/' . basename($filePath));
+            }
+            return null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
