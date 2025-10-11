@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function () {
     // Products
     Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'index']);
     Route::get('/products/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
+    Route::get('/products/feed', [\App\Http\Controllers\Api\ProductFeedController::class, 'rss']);
     Route::get('/products/{slug}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
     Route::get('/categories/{categorySlug}/products', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
     
@@ -269,11 +270,56 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::put('/users/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\UserController::class, 'toggleStatus']);
     Route::put('/users/{id}/change-password', [\App\Http\Controllers\Api\Admin\UserController::class, 'changePassword']);
     
-    // Reports & Export
-    Route::get('/reports/sales', [\App\Http\Controllers\Api\Admin\ReportController::class, 'salesReport']);
-    Route::get('/reports/products', [\App\Http\Controllers\Api\Admin\ReportController::class, 'productsReport']);
-    Route::get('/reports/customers', [\App\Http\Controllers\Api\Admin\ReportController::class, 'customersReport']);
-    Route::get('/reports/dashboard', [\App\Http\Controllers\Api\Admin\ReportController::class, 'dashboardReport']);
+    // Data Export System
+    Route::prefix('exports')->group(function () {
+        // Export endpoints
+        Route::post('/products', [\App\Http\Controllers\Api\ExportController::class, 'exportProducts']);
+        Route::post('/customers', [\App\Http\Controllers\Api\ExportController::class, 'exportCustomers']);
+        Route::post('/orders', [\App\Http\Controllers\Api\ExportController::class, 'exportOrders']);
+        
+        // Export management
+        Route::get('/', [\App\Http\Controllers\Api\ExportController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'show']);
+        Route::get('/{id}/status', [\App\Http\Controllers\Api\ExportController::class, 'getStatus']);
+        Route::get('/{id}/download', [\App\Http\Controllers\Api\ExportController::class, 'download']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'destroy']);
+        Route::get('/statistics/overview', [\App\Http\Controllers\Api\ExportController::class, 'getStatistics']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/products', function () { return response('', 204); });
+        Route::options('/customers', function () { return response('', 204); });
+        Route::options('/orders', function () { return response('', 204); });
+        Route::options('/', function () { return response('', 204); });
+        Route::options('/{id}', function () { return response('', 204); });
+        Route::options('/{id}/status', function () { return response('', 204); });
+        Route::options('/{id}/download', function () { return response('', 204); });
+        Route::options('/statistics/overview', function () { return response('', 204); });
+    });
+    
+    // Advanced Reporting System
+    Route::prefix('reports')->group(function () {
+        // Dashboard reports
+        Route::get('/dashboard/overview', [\App\Http\Controllers\Api\ReportController::class, 'getDashboardOverview']);
+        Route::get('/dashboard/business-intelligence', [\App\Http\Controllers\Api\ReportController::class, 'getBusinessIntelligence']);
+        
+        // Analytics reports
+        Route::get('/analytics/sales', [\App\Http\Controllers\Api\ReportController::class, 'getSalesAnalytics']);
+        Route::get('/analytics/customers', [\App\Http\Controllers\Api\ReportController::class, 'getCustomerAnalytics']);
+        Route::get('/analytics/products', [\App\Http\Controllers\Api\ReportController::class, 'getProductAnalytics']);
+        Route::get('/analytics/orders', [\App\Http\Controllers\Api\ReportController::class, 'getOrderAnalytics']);
+        
+        // Financial reports
+        Route::get('/financial/overview', [\App\Http\Controllers\Api\ReportController::class, 'getFinancialReports']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/dashboard/overview', function () { return response('', 204); });
+        Route::options('/dashboard/business-intelligence', function () { return response('', 204); });
+        Route::options('/analytics/sales', function () { return response('', 204); });
+        Route::options('/analytics/customers', function () { return response('', 204); });
+        Route::options('/analytics/products', function () { return response('', 204); });
+        Route::options('/analytics/orders', function () { return response('', 204); });
+        Route::options('/financial/overview', function () { return response('', 204); });
+    });
 });
 
 // Admin Auth (Public)
