@@ -7,6 +7,7 @@ use App\Services\ExportService;
 use App\Models\Export;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -45,7 +46,7 @@ class ExportController extends Controller
 
         try {
             $filters = $request->only(['category_id', 'status', 'price_min', 'price_max', 'date_from', 'date_to']);
-            $result = $this->exportService->exportData('products', $request->format, $filters, auth()->id());
+            $result = $this->exportService->exportData('products', $request->format, $filters, Auth::id());
 
             return response()->json([
                 'success' => true,
@@ -84,7 +85,7 @@ class ExportController extends Controller
 
         try {
             $filters = $request->only(['status', 'city', 'date_from', 'date_to']);
-            $result = $this->exportService->exportData('customers', $request->format, $filters, auth()->id());
+            $result = $this->exportService->exportData('customers', $request->format, $filters, Auth::id());
 
             return response()->json([
                 'success' => true,
@@ -125,7 +126,7 @@ class ExportController extends Controller
 
         try {
             $filters = $request->only(['status', 'payment_status', 'total_min', 'total_max', 'date_from', 'date_to']);
-            $result = $this->exportService->exportData('orders', $request->format, $filters, auth()->id());
+            $result = $this->exportService->exportData('orders', $request->format, $filters, Auth::id());
 
             return response()->json([
                 'success' => true,
@@ -157,7 +158,7 @@ class ExportController extends Controller
             }
 
             // Check if user owns this export (if authenticated)
-            if (auth()->check() && $export->user_id !== auth()->id()) {
+            if (Auth::check() && $export->user_id !== Auth::id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to export'
@@ -205,7 +206,7 @@ class ExportController extends Controller
             }
 
             // Check if user owns this export (if authenticated)
-            if (auth()->check() && $export->user_id !== auth()->id()) {
+            if (Auth::check() && $export->user_id !== Auth::id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to export'
@@ -245,8 +246,8 @@ class ExportController extends Controller
             $query = Export::query();
 
             // Filter by authenticated user if available
-            if (auth()->check()) {
-                $query->where('user_id', auth()->id());
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
             }
 
             // Apply filters
@@ -301,7 +302,7 @@ class ExportController extends Controller
             }
 
             // Check if user owns this export (if authenticated)
-            if (auth()->check() && $export->user_id !== auth()->id()) {
+            if (Auth::check() && $export->user_id !== Auth::id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to export'
