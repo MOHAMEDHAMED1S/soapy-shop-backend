@@ -168,7 +168,7 @@ class ExportService
                 'email' => $customer->email,
                 'phone' => $customer->phone,
                 'city' => $customer->city,
-                'address' => $customer->address,
+                'address' => is_array($customer->address) ? json_encode($customer->address) : $customer->address,
                 'status' => $customer->status,
                 'orders_count' => $customer->orders_count,
                 'created_at' => $customer->created_at->format('Y-m-d H:i:s'),
