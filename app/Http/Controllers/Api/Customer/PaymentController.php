@@ -255,6 +255,9 @@ class PaymentController extends Controller
             // Update order status based on payment status
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
+                
+                // Fire OrderPaid event to notify admins
+                event(new \App\Events\OrderPaid($order));
             } elseif ($paymentStatus['data']['InvoiceStatus'] === 'Failed') {
                 $order->update(['status' => 'pending']);
             }

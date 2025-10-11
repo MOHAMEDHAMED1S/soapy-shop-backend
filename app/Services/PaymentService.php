@@ -340,6 +340,9 @@ class PaymentService
             $order = $payment->order;
             if ($data['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
+                
+                // Fire OrderPaid event to notify admins
+                event(new \App\Events\OrderPaid($order));
             } elseif ($data['InvoiceStatus'] === 'Failed') {
                 $order->update(['status' => 'pending']);
             }
