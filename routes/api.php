@@ -279,6 +279,18 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::put('/users/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\UserController::class, 'toggleStatus']);
     Route::put('/users/{id}/change-password', [\App\Http\Controllers\Api\Admin\UserController::class, 'changePassword']);
     
+    // Data Export System (Admin)
+    Route::prefix('exports')->group(function () {
+        Route::post('/products', [\App\Http\Controllers\Api\ExportController::class, 'exportProducts']);
+        Route::post('/customers', [\App\Http\Controllers\Api\ExportController::class, 'exportCustomers']);
+        Route::post('/orders', [\App\Http\Controllers\Api\ExportController::class, 'exportOrders']);
+        Route::get('/', [\App\Http\Controllers\Api\ExportController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'show']);
+        Route::get('/{id}/status', [\App\Http\Controllers\Api\ExportController::class, 'getStatus']);
+        Route::get('/{id}/download', [\App\Http\Controllers\Api\ExportController::class, 'download']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\ExportController::class, 'destroy']);
+        Route::get('/statistics/overview', [\App\Http\Controllers\Api\ExportController::class, 'getStatistics']);
+    });
     
     // Advanced Reporting System
     Route::prefix('reports')->group(function () {
