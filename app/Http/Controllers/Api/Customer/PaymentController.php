@@ -255,9 +255,6 @@ class PaymentController extends Controller
             // Update order status based on payment status
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
-                
-                // Fire OrderPaid event to notify admins
-                event(new \App\Events\OrderPaid($order));
             } elseif ($paymentStatus['data']['InvoiceStatus'] === 'Failed') {
                 $order->update(['status' => 'pending']);
             }
@@ -438,8 +435,8 @@ class PaymentController extends Controller
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
                 
-                // Fire OrderPaid event instead of using NotificationService
-                event(new \App\Events\OrderPaid($order));
+                // Create order notification using NotificationService
+                $this->notificationService->createOrderNotification($order, 'order_paid');
             } elseif ($paymentStatus['data']['InvoiceStatus'] === 'Failed') {
                 $order->update(['status' => 'pending']);
             }

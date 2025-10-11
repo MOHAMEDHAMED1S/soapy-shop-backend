@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\WebhookLog;
 use App\Models\AdminNotification;
+use App\Events\OrderPaid;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -262,6 +263,11 @@ class WebhookService
             ],
             'created_at' => now()
         ]);
+
+        // إرسال الإيميلات للإدارة عند الدفع الناجح
+        if ($newStatus === 'paid') {
+            event(new OrderPaid($payment->order));
+        }
     }
 
     /**
