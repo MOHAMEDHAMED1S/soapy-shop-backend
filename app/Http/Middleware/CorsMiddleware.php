@@ -62,6 +62,6 @@ class CorsMiddleware
         }
         
         // Default to localhost:8080 for development
-        return 'http://localhost:8080';
+        return 'https://soapy-bubbles.com';
     }
 }

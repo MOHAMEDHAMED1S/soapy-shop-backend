@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:8080'],
+    'allowed_origins' => ['http://localhost:8080','https://soapy-bubbles.com'],
 
     'allowed_origins_patterns' => [],
 
