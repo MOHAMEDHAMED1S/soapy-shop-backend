@@ -41,7 +41,7 @@ class ExportService
             $export->update([
                 'status' => 'completed',
                 'file_path' => $filePath,
-                'file_size' => Storage::disk('exports')->size(basename($filePath)),
+                'file_size' => Storage::disk('exports')->size($export->file_name),
                 'records_count' => count($data),
                 'completed_at' => now(),
             ]);
