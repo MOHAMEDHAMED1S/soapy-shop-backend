@@ -168,7 +168,7 @@ class ExportService
                 'email' => $customer->email,
                 'phone' => $customer->phone,
                 'city' => $customer->city,
-                'address' => is_array($customer->address) ? json_encode($customer->address) : $customer->address,
+                'address' => is_array($customer->address) ? $this->formatAddress($customer->address) : $customer->address,
                 'status' => $customer->status,
                 'orders_count' => $customer->orders_count,
                 'created_at' => $customer->created_at->format('Y-m-d H:i:s'),
@@ -218,7 +218,7 @@ class ExportService
                 'subtotal_amount' => $order->subtotal_amount,
                 'shipping_amount' => $order->shipping_amount,
                 'items_count' => $order->orderItems->count(),
-                'shipping_address' => is_array($order->shipping_address) ? json_encode($order->shipping_address) : $order->shipping_address,
+                'shipping_address' => is_array($order->shipping_address) ? $this->formatAddress($order->shipping_address) : $order->shipping_address,
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
             ];
@@ -409,5 +409,31 @@ class ExportService
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Format address array to readable string
+     */
+    private function formatAddress(array $address): string
+    {
+        $parts = [];
+        
+        if (!empty($address['street'])) {
+            $parts[] = $address['street'];
+        }
+        
+        if (!empty($address['city'])) {
+            $parts[] = $address['city'];
+        }
+        
+        if (!empty($address['governorate'])) {
+            $parts[] = $address['governorate'];
+        }
+        
+        if (!empty($address['postal_code'])) {
+            $parts[] = $address['postal_code'];
+        }
+        
+        return implode(', ', $parts);
     }
 }
