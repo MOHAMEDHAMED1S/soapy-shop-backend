@@ -105,13 +105,20 @@ class NotificationService
             'created_at' => $order->created_at->toISOString()
         ], $additionalData);
 
-        return $this->createNotification(
+        $notification = $this->createNotification(
             $event,
             $notificationData['title'],
             $notificationData['message'],
             $data,
             $notificationData['priority']
         );
+
+        // Send email for order_paid event
+        if ($event === 'order_paid') {
+            event(new \App\Events\OrderPaid($order));
+        }
+
+        return $notification;
     }
 
     /**
