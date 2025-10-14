@@ -29,8 +29,8 @@ class PaymentController extends Controller
     public function getPaymentMethods()
     {
         try {
-            // Use real MyFatoorah service
-            $response = $this->paymentService->getPaymentMethods();
+            // Use real MyFatoorah service with filtering enabled
+            $response = $this->paymentService->getPaymentMethods(true);
 
             if ($response['success']) {
                 return response()->json([

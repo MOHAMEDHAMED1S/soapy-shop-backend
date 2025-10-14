@@ -171,7 +171,7 @@ class PaymentService
     /**
      * Get payment methods from MyFatoorah
      */
-    public function getPaymentMethods()
+    public function getPaymentMethods($filterEnabled = false)
     {
         try {
             $response = $this->callMyFatoorahAPI('/v2/InitiatePayment', [
@@ -180,9 +180,16 @@ class PaymentService
             ]);
 
             if ($response['success']) {
+                $paymentMethods = $response['data']['PaymentMethods'] ?? [];
+                
+                // Filter enabled payment methods if requested
+                if ($filterEnabled) {
+                    $paymentMethods = $this->filterEnabledPaymentMethods($paymentMethods);
+                }
+                
                 return [
                     'success' => true,
-                    'data' => $response['data']['PaymentMethods'] ?? []
+                    'data' => $paymentMethods
                 ];
             }
 
@@ -198,6 +205,17 @@ class PaymentService
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Filter payment methods based on admin settings
+     */
+    private function filterEnabledPaymentMethods(array $paymentMethods): array
+    {
+        // Filter out methods that are explicitly disabled
+        return array_filter($paymentMethods, function ($method) {
+            return \App\Models\PaymentMethodSetting::isEnabled($method['PaymentMethodCode']);
+        });
     }
 
     /**

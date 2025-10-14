@@ -293,6 +293,17 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/discount-codes/{id}/usage-history', [\App\Http\Controllers\Api\Admin\DiscountCodeController::class, 'usageHistory']);
     Route::post('/discount-codes/{id}/duplicate', [\App\Http\Controllers\Api\Admin\DiscountCodeController::class, 'duplicate']);
 
+    // Payment Methods Management
+    Route::get('/payment-methods', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'index']);
+    Route::put('/payment-methods/{code}/toggle', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'toggle']);
+    Route::post('/payment-methods/sync', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'sync']);
+    Route::put('/payment-methods/{code}', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'update']);
+    
+    // OPTIONS routes for payment methods
+    Route::options('/payment-methods', function () { return response('', 204); });
+    Route::options('/payment-methods/{code}/toggle', function () { return response('', 204); });
+    Route::options('/payment-methods/sync', function () { return response('', 204); });
+    Route::options('/payment-methods/{code}', function () { return response('', 204); });
     
     // Users Management
     Route::get('/users', [\App\Http\Controllers\Api\Admin\UserController::class, 'index']);
