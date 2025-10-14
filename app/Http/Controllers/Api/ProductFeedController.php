@@ -29,7 +29,7 @@ class ProductFeedController extends Controller
             // Override with production URL if in production
             if (config('app.env') === 'production') {
                 $siteUrl = 'https://soapy-bubbles.com';
-                $feedUrl = 'api.' . $siteUrl . '/api/v1/products/feed';
+                $feedUrl = 'https://api.soapy-bubbles.com/api/v1/products/feed';
             }
 
             // Generate XML content
@@ -59,8 +59,8 @@ class ProductFeedController extends Controller
         $xml .= '<channel>' . "\n";
         $xml .= '    <title>' . htmlspecialchars($siteName) . '</title>' . "\n";
         $xml .= '    <description>Product Feed for Facebook</description>' . "\n";
-        $xml .= '    <link>' . htmlspecialchars($siteUrl) . '</link>' . "\n";
-        $xml .= '    <atom:link href="' . htmlspecialchars($feedUrl) . '" rel="self" type="application/rss+xml" />' . "\n";
+        $xml .= '    <link>' . htmlspecialchars('https://api.soapy-bubbles.com/api/v1/products/feed') . '</link>' . "\n";
+        $xml .= '    <atom:link href="' . htmlspecialchars('https://api.soapy-bubbles.com/api/v1/products/feed') . '" rel="self" type="application/rss+xml" />' . "\n";
         $xml .= '' . "\n";
 
         foreach ($products as $product) {
