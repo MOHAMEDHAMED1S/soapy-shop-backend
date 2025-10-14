@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معاينة: تأكيد الطلب للعميل</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f5f5f5; color:#333; line-height:1.6; }
+    .container { max-width:600px; margin:20px auto; background:#fff; border:1px solid #e0e0e0; overflow:hidden; }
+    .header { background:#fff; color:#333; padding:40px 30px; text-align:center; border-bottom:2px solid #000; }
+    .logo { margin-bottom:20px; }
+    .logo img { max-width:120px; height:auto; display:block; margin:0 auto; }
+    .header h1 { font-size:24px; margin-bottom:10px; font-weight:600; color:#000; }
+    .header p { font-size:16px; color:#666; }
+    .content { padding:30px; }
+    .order-info { background:#f9f9f9; border:1px solid #e0e0e0; padding:20px; margin-bottom:25px; }
+    .order-info h2 { font-size:18px; margin-bottom:15px; color:#000; font-weight:600; border-bottom:1px solid #e0e0e0; padding-bottom:10px; }
+    .order-details { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+    .detail-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; }
+    .detail-label { font-weight:600; color:#000; font-size:14px; }
+    .detail-value { color:#333; font-size:14px; }
+    .order-items { margin-bottom:25px; }
+    .order-items h3 { font-size:18px; margin-bottom:15px; color:#000; font-weight:600; border-bottom:1px solid #e0e0e0; padding-bottom:10px; }
+    .item { display:flex; justify-content:space-between; align-items:center; padding:15px; border:1px solid #e0e0e0; margin-bottom:10px; background:#fff; }
+    .item-info { flex:1; }
+    .item-name { font-weight:600; color:#000; margin-bottom:5px; font-size:14px; }
+    .item-details { color:#666; font-size:13px; }
+    .item-price { font-weight:600; color:#000; font-size:14px; }
+    .total-section { background:#f9f9f9; border:2px solid #000; padding:20px; margin-bottom:25px; }
+    .total-amount { font-size:28px; font-weight:700; margin-bottom:5px; }
+    .total-label { font-size:16px; opacity:.9; }
+    .tracking-section { background:#f9f9f9; border:1px solid #e0e0e0; padding:20px; margin-bottom:25px; text-align:center; }
+    .tracking-section h3 { font-size:16px; margin-bottom:10px; color:#000; font-weight:600; }
+    .tracking-button { display:inline-block; background:#000; color:#fff; padding:12px 25px; text-decoration:none; font-weight:600; font-size:14px; border:2px solid #000; }
+    .support-section { background:#f9f9f9; border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin:25px 0; }
+    .support-section h4 { color:#000; margin-bottom:12px; font-size:18px; font-weight:600; }
+    .support-section p { color:#333; margin-bottom:10px; line-height:1.6; }
+    .contact-info { background:#fff; border-radius:8px; padding:15px; margin-top:15px; }
+    .contact-item { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:14px; }
+    .footer { background:#000; color:#fff; padding:30px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <img src="https://soapy-bubbles.com/logo.png" alt="شعار Soapy Bubbles">
+      </div>
+      <h1>تأكيد طلبك</h1>
+      <p>شكراً لك على طلبك. إليك تفاصيل طلبك</p>
+    </div>
+    <div class="content">
+      <div class="order-info">
+        <h2>معلومات الطلب</h2>
+        <div class="order-details">
+          <div class="detail-row"><span class="detail-label">رقم الطلب:</span><span class="detail-value">SB-2024-001</span></div>
+          <div class="detail-row"><span class="detail-label">تاريخ الطلب:</span><span class="detail-value">2025-10-14 12:30</span></div>
+          <div class="detail-row"><span class="detail-label">حالة الطلب:</span><span class="detail-value">مدفوع</span></div>
+          <div class="detail-row"><span class="detail-label">اسم العميل:</span><span class="detail-value">محمد حامد</span></div>
+        </div>
+      </div>
+      <div class="order-items">
+        <h3>المنتجات المطلوبة</h3>
+        <div class="item">
+          <div class="item-info">
+            <div class="item-name">صابون طبيعي بالعسل واللافندر</div>
+            <div class="item-details">الكمية: 1 × 12.75 KWD</div>
+          </div>
+          <div class="item-price">12.75 KWD</div>
+        </div>
+        <div class="item">
+          <div class="item-info">
+            <div class="item-name">كريم أساس طبيعي بتغطية كاملة</div>
+            <div class="item-details">الكمية: 1 × 32.00 KWD</div>
+          </div>
+          <div class="item-price">32.00 KWD</div>
+        </div>
+      </div>
+      <div class="total-section">
+        <div class="total-label">المجموع الكلي</div>
+        <div class="total-amount">65.25 KWD</div>
+      </div>
+      <div class="tracking-section">
+        <h3>تتبع طلبك</h3>
+        <p>يمكنك تتبع حالة طلبك في أي وقت من خلال الرابط التالي:</p>
+        <a href="#" class="tracking-button">تتبع الطلب الآن</a>
+        <p style="margin-top:15px; font-size:14px; opacity:.9">رقم التتبع: SB-2024-001</p>
+      </div>
+      <div class="support-section">
+        <h4>هل تحتاج مساعدة؟</h4>
+        <p>إذا كان لديك أي استفسار حول طلبك، لا تتردد في التواصل معنا:</p>
+        <div class="contact-info">
+          <div class="contact-item">
+            <span style="font-weight:600;color:#000">البريد الإلكتروني:</span>
+            <span>info@soapy-bubbles.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <h4>شكراً لاختيارك Soapy Bubbles</h4>
+      <p>إذا كان لديك أي استفسارات، لا تتردد في التواصل معنا</p>
+      <p>البريد الإلكتروني: <a style="color:#fff" href="mailto:info@soapy-bubbles.com">info@soapy-bubbles.com</a></p>
+    </div>
+  </div>
+</body>
+</html>
