@@ -28,8 +28,8 @@ class ProductFeedController extends Controller
             
             // Override with production URL if in production
             if (config('app.env') === 'production') {
-                $siteUrl = 'https://api.soapy-bubbles.com';
-                $feedUrl = $siteUrl . '/api/v1/products/feed';
+                $siteUrl = 'https://soapy-bubbles.com';
+                $feedUrl = 'api.' . $siteUrl . '/api/v1/products/feed';
             }
 
             // Generate XML content
