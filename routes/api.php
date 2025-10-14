@@ -71,6 +71,33 @@ Route::prefix('v1')->group(function () {
     // Webhooks
     Route::post('/webhooks/myfatoorah', [\App\Http\Controllers\Api\WebhookController::class, 'handleMyFatoorahWebhook'])->middleware('webhook');
     Route::post('/webhooks/test', [\App\Http\Controllers\Api\WebhookController::class, 'testWebhook'])->middleware('webhook');
+    
+    // Public Reports System (for external access)
+    Route::prefix('reports')->group(function () {
+        // Dashboard reports
+        Route::get('/dashboard/overview', [\App\Http\Controllers\Api\ReportController::class, 'getDashboardOverview']);
+        Route::get('/dashboard/business-intelligence', [\App\Http\Controllers\Api\ReportController::class, 'getBusinessIntelligence']);
+        
+        // Analytics reports
+        Route::get('/analytics/sales', [\App\Http\Controllers\Api\ReportController::class, 'getSalesAnalytics']);
+        Route::get('/analytics/customers', [\App\Http\Controllers\Api\ReportController::class, 'getCustomerAnalytics']);
+        Route::get('/analytics/products', [\App\Http\Controllers\Api\ReportController::class, 'getProductAnalytics']);
+        Route::get('/analytics/orders', [\App\Http\Controllers\Api\ReportController::class, 'getOrderAnalytics']);
+        Route::get('/analytics/seasonal-trends', [\App\Http\Controllers\Api\ReportController::class, 'getSeasonalTrends']);
+        
+        // Financial reports
+        Route::get('/financial/overview', [\App\Http\Controllers\Api\ReportController::class, 'getFinancialReports']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/dashboard/overview', function () { return response('', 204); });
+        Route::options('/dashboard/business-intelligence', function () { return response('', 204); });
+        Route::options('/analytics/sales', function () { return response('', 204); });
+        Route::options('/analytics/customers', function () { return response('', 204); });
+        Route::options('/analytics/products', function () { return response('', 204); });
+        Route::options('/analytics/orders', function () { return response('', 204); });
+        Route::options('/analytics/seasonal-trends', function () { return response('', 204); });
+        Route::options('/financial/overview', function () { return response('', 204); });
+    });
 });
 
 // Admin APIs (Protected with JWT)
