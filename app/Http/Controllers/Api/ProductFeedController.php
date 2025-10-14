@@ -23,7 +23,7 @@ class ProductFeedController extends Controller
 
             // Get site information from config
             $siteName = config('app.name', 'Soapy Bubbles');
-            $siteUrl = config('app.url', 'https://soapy-bubbles.com');
+            $siteUrl =  'https://soapy-bubbles.com';
             $feedUrl = 'api.' . $siteUrl . '/api/v1/products/feed';
             
             // Override with production URL if in production
