@@ -191,16 +191,16 @@ class ReportController extends Controller
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
 
             // Product performance
-            $productPerformance = Product::select('products.*')
+            $productPerformance = Product::select('products.id', 'products.title', 'products.price', 'products.slug', 'products.description', 'products.stock_quantity', 'products.category_id', 'products.created_at', 'products.updated_at')
                 ->selectRaw('COALESCE(SUM(order_items.quantity), 0) as total_sold')
-                ->selectRaw('COALESCE(SUM(order_items.quantity * order_items.price), 0) as total_revenue')
+                ->selectRaw('COALESCE(SUM(order_items.quantity * order_items.product_price), 0) as total_revenue')
                 ->leftJoin('order_items', 'products.id', '=', 'order_items.product_id')
                 ->leftJoin('orders', 'order_items.order_id', '=', 'orders.id')
                 ->where(function($query) use ($dateFrom, $dateTo) {
                     $query->whereBetween('orders.created_at', [$dateFrom, $dateTo])
                           ->orWhereNull('orders.created_at');
                 })
-                ->groupBy('products.id', 'products.title', 'products.price')
+                ->groupBy('products.id', 'products.title', 'products.price', 'products.slug', 'products.description', 'products.stock_quantity', 'products.category_id', 'products.created_at', 'products.updated_at')
                 ->orderBy('total_sold', 'desc')
                 ->limit(20)
                 ->get();
@@ -536,9 +536,17 @@ class ReportController extends Controller
     private function calculateRepeatCustomerRate(string $dateFrom, string $dateTo): float
     {
         $totalCustomers = Customer::whereBetween('created_at', [$dateFrom, $dateTo])->count();
-        $repeatCustomers = Customer::whereHas('orders', function($query) {
-            $query->havingRaw('COUNT(*) > 1');
-        })->whereBetween('created_at', [$dateFrom, $dateTo])->count();
+        
+        // Fix GROUP BY issue by using a proper subquery approach
+        $repeatCustomers = DB::table(DB::raw('(
+            SELECT customers.id 
+            FROM customers 
+            INNER JOIN orders ON customers.id = orders.customer_id 
+            WHERE customers.created_at BETWEEN "' . $dateFrom . '" AND "' . $dateTo . '"
+            GROUP BY customers.id 
+            HAVING COUNT(orders.id) > 1
+        ) as repeat_customers_subquery'))
+        ->count();
         
         return $totalCustomers > 0 ? ($repeatCustomers / $totalCustomers) * 100 : 0;
     }
