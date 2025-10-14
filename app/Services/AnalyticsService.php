@@ -20,7 +20,7 @@ class AnalyticsService
         $startDate = Carbon::now()->subDays($period);
         $endDate = Carbon::now();
 
-        $query = Order::where('status', 'paid')
+        $query = Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         switch ($groupBy) {
@@ -123,8 +123,9 @@ class AnalyticsService
             ->get()
             ->pluck('count', 'status');
 
-        // Daily order trends
+        // Daily order trends - only include paid orders for revenue calculation
         $dailyTrends = Order::where('created_at', '>=', $startDate)
+            ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
             ->selectRaw('DATE(created_at) as date, COUNT(*) as orders_count, SUM(total_amount) as revenue')
             ->groupBy('date')
             ->orderBy('date')
@@ -332,8 +333,9 @@ class AnalyticsService
     {
         $startDate = Carbon::now()->subDays($period);
 
-        // Customer order statistics
+        // Customer order statistics - only include paid orders
         $customerStats = Order::where('created_at', '>=', $startDate)
+            ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
             ->selectRaw('
                 customer_name,
                 customer_phone,

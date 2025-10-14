@@ -288,7 +288,7 @@ class OrderManagementController extends Controller
                         'updated_count' => count($updatedOrders),
                         'failed_count' => count($failedOrders),
                         'new_status' => $newStatus,
-                        'updated_orders' => $updatedOrders->pluck('order_number')->toArray()
+                        'updated_orders' => collect($updatedOrders)->pluck('order_number')->toArray()
                     ],
                     'medium'
                 );
@@ -351,11 +351,13 @@ class OrderManagementController extends Controller
                     ->get()
                     ->pluck('count', 'status'),
                 'daily_trends' => Order::where('created_at', '>=', $startDate)
+                    ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->selectRaw('DATE(created_at) as date, COUNT(*) as orders_count, SUM(total_amount) as revenue')
                     ->groupBy('date')
                     ->orderBy('date')
                     ->get(),
                 'top_customers' => Order::where('created_at', '>=', $startDate)
+                    ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->selectRaw('customer_name, customer_phone, COUNT(*) as orders_count, SUM(total_amount) as total_spent')
                     ->groupBy('customer_name', 'customer_phone')
                     ->orderBy('total_spent', 'desc')

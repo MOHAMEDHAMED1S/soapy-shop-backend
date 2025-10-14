@@ -43,22 +43,26 @@ class ReportController extends Controller
             $format = $request->get('format', 'json');
             $groupBy = $request->get('group_by', 'day');
 
-            $query = Order::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', 'paid');
+            // Base query with proper status filtering
+            $baseQuery = Order::whereBetween('created_at', [$startDate, $endDate])
+                ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment']);
 
-            // Group by period
+            // Group by period - clone the base query to maintain filters
             switch ($groupBy) {
                 case 'day':
+                    $query = clone $baseQuery;
                     $query->selectRaw('DATE(created_at) as period, COUNT(*) as orders_count, SUM(total_amount) as total_revenue')
                           ->groupBy('period')
                           ->orderBy('period');
                     break;
                 case 'week':
+                    $query = clone $baseQuery;
                     $query->selectRaw('YEAR(created_at) as year, WEEK(created_at) as week, COUNT(*) as orders_count, SUM(total_amount) as total_revenue')
                           ->groupBy('year', 'week')
                           ->orderBy('year', 'week');
                     break;
                 case 'month':
+                    $query = clone $baseQuery;
                     $query->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as orders_count, SUM(total_amount) as total_revenue')
                           ->groupBy('year', 'month')
                           ->orderBy('year', 'month');
@@ -70,13 +74,13 @@ class ReportController extends Controller
             // Calculate summary
             $summary = [
                 'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])
-                    ->where('status', 'paid')
+                    ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->count(),
                 'total_revenue' => Order::whereBetween('created_at', [$startDate, $endDate])
-                    ->where('status', 'paid')
+                    ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->sum('total_amount'),
                 'average_order_value' => Order::whereBetween('created_at', [$startDate, $endDate])
-                    ->where('status', 'paid')
+                    ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->avg('total_amount'),
                 'period' => [
                     'start' => $startDate->toDateString(),
@@ -300,7 +304,7 @@ class ReportController extends Controller
 
             // Orders data
             $orders = Order::whereBetween('created_at', [$startDate, $endDate])->get();
-            $paidOrders = $orders->where('status', 'paid');
+            $paidOrders = $orders->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment']);
 
             // Products data
             $products = Product::all();
