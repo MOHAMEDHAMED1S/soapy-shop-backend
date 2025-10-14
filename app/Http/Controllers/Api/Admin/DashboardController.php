@@ -37,7 +37,7 @@ class DashboardController extends Controller
                 'total_orders' => Order::count(),
                 'total_products' => Product::count(),
                 'total_categories' => Category::count(),
-                'total_revenue' => Order::where('status', 'paid')->sum('total_amount'),
+                'total_revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])->sum('total_amount'),
                 'pending_orders' => Order::where('status', 'pending')->count(),
                 'low_stock_products' => 0, // Stock tracking not implemented yet
                 'unread_notifications' => AdminNotification::whereNull('read_at')->count(),
@@ -45,14 +45,14 @@ class DashboardController extends Controller
                 'active_customers' => \App\Models\Customer::where('is_active', true)->count(),
                 'total_discount_codes' => \App\Models\DiscountCode::count(),
                 'active_discount_codes' => \App\Models\DiscountCode::where('is_active', true)->count(),
-                'average_order_value' => Order::where('status', 'paid')->avg('total_amount') ?? 0,
+                'average_order_value' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])->avg('total_amount') ?? 0,
                 'conversion_rate' => $this->calculateConversionRate($period),
             ];
 
             // Period-based statistics
             $periodStats = [
                 'orders_count' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
-                'revenue' => Order::where('status', 'paid')
+                'revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->sum('total_amount'),
                 'new_products' => Product::whereBetween('created_at', [$startDate, $endDate])->count(),
@@ -66,7 +66,7 @@ class DashboardController extends Controller
             $previousPeriodEnd = $startDate->copy();
 
             $previousOrders = Order::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count();
-            $previousRevenue = Order::where('status', 'paid')
+            $previousRevenue = Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                 ->whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])
                 ->sum('total_amount');
 
@@ -420,7 +420,7 @@ class DashboardController extends Controller
         $totalVisitors = Order::whereBetween('created_at', [$startDate, $endDate])->count();
         
         // Total conversions (paid orders)
-        $conversions = Order::where('status', 'paid')
+        $conversions = Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
@@ -440,7 +440,7 @@ class DashboardController extends Controller
             $stats = [
                 'online_visitors' => rand(5, 50), // Placeholder - would need real analytics
                 'current_orders' => Order::where('status', 'pending')->count(),
-                'today_revenue' => Order::where('status', 'paid')
+                'today_revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                     ->whereDate('created_at', Carbon::today())
                     ->sum('total_amount'),
                 'today_orders' => Order::whereDate('created_at', Carbon::today())->count(),

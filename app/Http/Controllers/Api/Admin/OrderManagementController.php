@@ -337,10 +337,10 @@ class OrderManagementController extends Controller
                 ],
                 'period_stats' => [
                     'orders_count' => Order::where('created_at', '>=', $startDate)->count(),
-                    'total_revenue' => Order::where('status', 'paid')
+                    'total_revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                         ->where('created_at', '>=', $startDate)
                         ->sum('total_amount'),
-                    'average_order_value' => Order::where('status', 'paid')
+                    'average_order_value' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
                         ->where('created_at', '>=', $startDate)
                         ->avg('total_amount'),
                     'completion_rate' => $this->calculateCompletionRate($startDate),
@@ -502,7 +502,7 @@ class OrderManagementController extends Controller
 
         return [
             'total_orders' => $query->count(),
-            'total_revenue' => $query->where('status', 'paid')->sum('total_amount'),
+            'total_revenue' => $query->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])->sum('total_amount'),
             'pending_orders' => $query->where('status', 'pending')->count(),
             'paid_orders' => $query->where('status', 'paid')->count(),
             'shipped_orders' => $query->where('status', 'shipped')->count(),
