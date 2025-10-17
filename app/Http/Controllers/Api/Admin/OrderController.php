@@ -151,15 +151,15 @@ class OrderController extends Controller
             $newStatus = $request->status;
 
             // Validate status transition
-            $validTransitions = [
-                'pending' => ['awaiting_payment', 'cancelled'],
-                'awaiting_payment' => ['paid', 'cancelled'],
-                'paid' => ['shipped', 'refunded', 'cancelled'],
-                'shipped' => ['delivered', 'cancelled'],
-                'delivered' => ['refunded', 'cancelled'],
-                'cancelled' => [],
-                'refunded' => []
-            ];
+        $validTransitions = [
+            'pending' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'awaiting_payment' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'paid' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'shipped' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'delivered' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'cancelled' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'refunded' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded']
+        ];
 
             if (!in_array($newStatus, $validTransitions[$oldStatus] ?? [])) {
                 return response()->json([

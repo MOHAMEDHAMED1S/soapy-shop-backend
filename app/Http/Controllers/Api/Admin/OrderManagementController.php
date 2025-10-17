@@ -551,13 +551,13 @@ class OrderManagementController extends Controller
     private function isValidStatusTransition(string $from, string $to): bool
     {
         $validTransitions = [
-            'pending' => ['awaiting_payment', 'cancelled'],
-            'awaiting_payment' => ['paid', 'cancelled'],
-            'paid' => ['shipped', 'refunded'],
-            'shipped' => ['delivered', 'cancelled'],
-            'delivered' => ['refunded'],
-            'cancelled' => [],
-            'refunded' => []
+            'pending' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'awaiting_payment' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'paid' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'shipped' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'delivered' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'cancelled' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded'],
+            'refunded' => ['pending', 'awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded']
         ];
 
         return in_array($to, $validTransitions[$from] ?? []);

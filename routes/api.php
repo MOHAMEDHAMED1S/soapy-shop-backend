@@ -59,6 +59,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/discount-codes/{code}', [\App\Http\Controllers\Api\Customer\DiscountController::class, 'getCodeDetails']);
     Route::post('/discount-codes/validate', [\App\Http\Controllers\Api\Customer\DiscountController::class, 'validateCode']);
     
+    // Shipping Cost (Public)
+    Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
+    
     // Data Export System (Public)
     Route::prefix('exports')->group(function () {
         Route::post('/products', [\App\Http\Controllers\Api\ExportController::class, 'exportProducts']);
@@ -353,6 +356,18 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
         Route::options('/analytics/products', function () { return response('', 204); });
         Route::options('/analytics/orders', function () { return response('', 204); });
         Route::options('/financial/overview', function () { return response('', 204); });
+    });
+    
+    // Shipping Cost Management (Admin)
+    Route::prefix('shipping')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ShippingController::class, 'index']);
+        Route::get('/active', [\App\Http\Controllers\ShippingController::class, 'getActive']);
+        Route::put('/update', [\App\Http\Controllers\ShippingController::class, 'update']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/', function () { return response('', 204); });
+        Route::options('/active', function () { return response('', 204); });
+        Route::options('/update', function () { return response('', 204); });
     });
 });
 
