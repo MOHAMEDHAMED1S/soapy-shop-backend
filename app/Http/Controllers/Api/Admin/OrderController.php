@@ -58,42 +58,44 @@ class OrderController extends Controller
             $perPage = $request->get('per_page', 15);
             $orders = $query->paginate($perPage);
 
-            // Create a clone of the query for statistics (without pagination)
-            $statsQuery = Order::with(['orderItems.product', 'payment']);
+            // Create base query for statistics (without status filter for individual counts)
+            $baseStatsQuery = Order::with(['orderItems.product', 'payment']);
 
-            // Apply the same filters for statistics
-            if ($request->has('status') && $request->status) {
-                $statsQuery->where('status', $request->status);
-            }
-
+            // Apply date and search filters only (not status filter for base query)
             if ($request->has('date_from') && $request->date_from) {
-                $statsQuery->whereDate('created_at', '>=', $request->date_from);
+                $baseStatsQuery->whereDate('created_at', '>=', $request->date_from);
             }
 
             if ($request->has('date_to') && $request->date_to) {
-                $statsQuery->whereDate('created_at', '<=', $request->date_to);
+                $baseStatsQuery->whereDate('created_at', '<=', $request->date_to);
             }
 
             if ($request->has('search') && $request->search) {
                 $searchTerm = $request->search;
-                $statsQuery->where(function ($q) use ($searchTerm) {
+                $baseStatsQuery->where(function ($q) use ($searchTerm) {
                     $q->where('order_number', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('customer_name', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('customer_phone', 'LIKE', "%{$searchTerm}%");
                 });
             }
 
+            // Create a separate query that includes status filter for total count
+            $filteredStatsQuery = clone $baseStatsQuery;
+            if ($request->has('status') && $request->status) {
+                $filteredStatsQuery->where('status', $request->status);
+            }
+
             // Calculate filtered statistics
             $summary = [
-                'total_orders' => $statsQuery->count(),
-                'pending_orders' => (clone $statsQuery)->where('status', 'pending')->count(),
-                'paid_orders' => (clone $statsQuery)->where('status', 'paid')->count(),
-                'shipped_orders' => (clone $statsQuery)->where('status', 'shipped')->count(),
-                'delivered_orders' => (clone $statsQuery)->where('status', 'delivered')->count(),
-                'cancelled_orders' => (clone $statsQuery)->where('status', 'cancelled')->count(),
-                'awaiting_payment_orders' => (clone $statsQuery)->where('status', 'awaiting_payment')->count(),
-                'total_revenue' => (clone $statsQuery)->where('status', 'paid')->sum('total_amount'),
-                'average_order_value' => (clone $statsQuery)->where('status', 'paid')->avg('total_amount'),
+                'total_orders' => $filteredStatsQuery->count(),
+                'pending_orders' => (clone $baseStatsQuery)->where('status', 'pending')->count(),
+                'paid_orders' => (clone $baseStatsQuery)->where('status', 'paid')->count(),
+                'shipped_orders' => (clone $baseStatsQuery)->where('status', 'shipped')->count(),
+                'delivered_orders' => (clone $baseStatsQuery)->where('status', 'delivered')->count(),
+                'cancelled_orders' => (clone $baseStatsQuery)->where('status', 'cancelled')->count(),
+                'awaiting_payment_orders' => (clone $baseStatsQuery)->where('status', 'awaiting_payment')->count(),
+                'total_revenue' => (clone $baseStatsQuery)->where('status', 'paid')->sum('total_amount'),
+                'average_order_value' => (clone $baseStatsQuery)->where('status', 'paid')->avg('total_amount'),
                 'filters_applied' => [
                     'status' => $request->status ?? null,
                     'date_from' => $request->date_from ?? null,
