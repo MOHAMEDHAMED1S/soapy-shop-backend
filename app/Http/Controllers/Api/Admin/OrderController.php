@@ -58,14 +58,48 @@ class OrderController extends Controller
             $perPage = $request->get('per_page', 15);
             $orders = $query->paginate($perPage);
 
-            // Add summary statistics
+            // Create a clone of the query for statistics (without pagination)
+            $statsQuery = Order::with(['orderItems.product', 'payment']);
+
+            // Apply the same filters for statistics
+            if ($request->has('status') && $request->status) {
+                $statsQuery->where('status', $request->status);
+            }
+
+            if ($request->has('date_from') && $request->date_from) {
+                $statsQuery->whereDate('created_at', '>=', $request->date_from);
+            }
+
+            if ($request->has('date_to') && $request->date_to) {
+                $statsQuery->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            if ($request->has('search') && $request->search) {
+                $searchTerm = $request->search;
+                $statsQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('order_number', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('customer_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('customer_phone', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            // Calculate filtered statistics
             $summary = [
-                'total_orders' => Order::count(),
-                'pending_orders' => Order::where('status', 'pending')->count(),
-                'paid_orders' => Order::where('status', 'paid')->count(),
-                'shipped_orders' => Order::where('status', 'shipped')->count(),
-                'delivered_orders' => Order::where('status', 'delivered')->count(),
-                'total_revenue' => Order::where('status', 'paid')->sum('total_amount'),
+                'total_orders' => $statsQuery->count(),
+                'pending_orders' => (clone $statsQuery)->where('status', 'pending')->count(),
+                'paid_orders' => (clone $statsQuery)->where('status', 'paid')->count(),
+                'shipped_orders' => (clone $statsQuery)->where('status', 'shipped')->count(),
+                'delivered_orders' => (clone $statsQuery)->where('status', 'delivered')->count(),
+                'cancelled_orders' => (clone $statsQuery)->where('status', 'cancelled')->count(),
+                'awaiting_payment_orders' => (clone $statsQuery)->where('status', 'awaiting_payment')->count(),
+                'total_revenue' => (clone $statsQuery)->where('status', 'paid')->sum('total_amount'),
+                'average_order_value' => (clone $statsQuery)->where('status', 'paid')->avg('total_amount'),
+                'filters_applied' => [
+                    'status' => $request->status ?? null,
+                    'date_from' => $request->date_from ?? null,
+                    'date_to' => $request->date_to ?? null,
+                    'search' => $request->search ?? null
+                ]
             ];
 
             return response()->json([
