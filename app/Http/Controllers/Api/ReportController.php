@@ -16,13 +16,24 @@ use Carbon\Carbon;
 class ReportController extends Controller
 {
     /**
-     * Get dashboard overview statistics
+     * Get dashboard overview
      */
     public function getDashboardOverview(Request $request): JsonResponse
     {
         try {
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Validate dates - ensure dateTo is not in the future
+            $currentDate = now()->format('Y-m-d');
+            if ($dateTo > $currentDate) {
+                $dateTo = $currentDate;
+            }
+            
+            // Ensure dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             $stats = [
                 // Products (not filtered by date as they are current inventory)
@@ -86,6 +97,17 @@ class ReportController extends Controller
             $period = $request->get('period', 'month'); // day, week, month, year
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Validate dates - ensure dateTo is not in the future
+            $currentDate = now()->format('Y-m-d');
+            if ($dateTo > $currentDate) {
+                $dateTo = $currentDate;
+            }
+            
+            // Ensure dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             // Sales over time
             $salesOverTime = $this->getSalesOverTime($period, $dateFrom, $dateTo);
@@ -139,6 +161,17 @@ class ReportController extends Controller
         try {
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Validate dates - ensure dateTo is not in the future
+            $currentDate = now()->format('Y-m-d');
+            if ($dateTo > $currentDate) {
+                $dateTo = $currentDate;
+            }
+            
+            // Ensure dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             // Customer acquisition over time
             $customerAcquisition = Customer::selectRaw('DATE(created_at) as date, COUNT(*) as count')
@@ -206,6 +239,17 @@ class ReportController extends Controller
         try {
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Validate dates - ensure dateTo is not in the future
+            $currentDate = now()->format('Y-m-d');
+            if ($dateTo > $currentDate) {
+                $dateTo = $currentDate;
+            }
+            
+            // Ensure dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             // Product performance
             $productPerformance = Product::select('products.id', 'products.title', 'products.price', 'products.slug', 'products.description', 'products.stock_quantity', 'products.category_id', 'products.created_at', 'products.updated_at')
@@ -263,6 +307,17 @@ class ReportController extends Controller
         try {
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Validate dates - ensure dateTo is not in the future
+            $currentDate = now()->format('Y-m-d');
+            if ($dateTo > $currentDate) {
+                $dateTo = $currentDate;
+            }
+            
+            // Ensure dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             // Orders by status
             $ordersByStatus = Order::selectRaw('status, COUNT(*) as count')
@@ -326,6 +381,15 @@ class ReportController extends Controller
         try {
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Store original dates for response
+            $originalDateFrom = $dateFrom;
+            $originalDateTo = $dateTo;
+            
+            // Only validate that dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             // Revenue breakdown
             $revenueBreakdown = Order::selectRaw('
@@ -380,6 +444,12 @@ class ReportController extends Controller
                     'revenue_breakdown' => $revenueBreakdown,
                     'monthly_revenue' => $monthlyRevenue,
                     'refunds_and_cancellations' => $refundsAndCancellations,
+                    'date_range' => [
+                        'from' => $originalDateFrom,
+                        'to' => $originalDateTo,
+                        'applied_from' => $dateFrom,
+                        'applied_to' => $dateTo
+                    ]
                 ]
             ]);
 
@@ -399,6 +469,17 @@ class ReportController extends Controller
         try {
             $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
             $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+            
+            // Validate dates - ensure dateTo is not in the future
+            $currentDate = now()->format('Y-m-d');
+            if ($dateTo > $currentDate) {
+                $dateTo = $currentDate;
+            }
+            
+            // Ensure dateFrom is not after dateTo
+            if ($dateFrom > $dateTo) {
+                $dateFrom = $dateTo;
+            }
 
             // Key performance indicators
             $kpis = [
