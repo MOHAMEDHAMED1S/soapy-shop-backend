@@ -29,8 +29,28 @@ class CustomerService
                     $updateData['name'] = $orderData['customer_name'];
                 }
                 
-                if (isset($orderData['customer_email']) && $orderData['customer_email'] !== $customer->email) {
-                    $updateData['email'] = $orderData['customer_email'];
+                // Handle email update carefully to avoid unique constraint violation
+                if (isset($orderData['customer_email']) && !empty($orderData['customer_email'])) {
+                    $newEmail = $orderData['customer_email'];
+                    
+                    // Only update if the email is different from current email
+                    if ($newEmail !== $customer->email) {
+                        // Check if this email is already used by another customer
+                        $existingCustomerWithEmail = Customer::where('email', $newEmail)
+                            ->where('id', '!=', $customer->id)
+                            ->first();
+                        
+                        if (!$existingCustomerWithEmail) {
+                            $updateData['email'] = $newEmail;
+                        } else {
+                            Log::warning('Email already exists for another customer', [
+                                'email' => $newEmail,
+                                'existing_customer_id' => $existingCustomerWithEmail->id,
+                                'current_customer_id' => $customer->id,
+                                'phone' => $phone
+                            ]);
+                        }
+                    }
                 }
                 
                 if (isset($orderData['shipping_address']) && $orderData['shipping_address'] !== $customer->address) {
