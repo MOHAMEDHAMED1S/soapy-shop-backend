@@ -9,6 +9,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class OrderController extends Controller
 {
@@ -260,30 +261,51 @@ class OrderController extends Controller
     public function statistics(Request $request)
     {
         try {
-            $period = $request->get('period', '30'); // days
-            $startDate = now()->subDays($period);
+            // Handle date filtering
+            $dateFrom = $request->get('date_from') ?: $request->get('start_date');
+            $dateTo = $request->get('date_to') ?: $request->get('end_date');
+            
+            // Default to last 30 days if no dates provided
+            if (!$dateFrom && !$dateTo) {
+                $period = $request->get('period', '30'); // days
+                $startDate = now()->subDays($period);
+                $endDate = now();
+            } else {
+                $startDate = $dateFrom ? Carbon::parse($dateFrom)->startOfDay() : now()->subDays(30);
+                $endDate = $dateTo ? Carbon::parse($dateTo)->endOfDay() : now();
+            }
+
+            // Base query for date filtering
+            $baseQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
 
             $stats = [
-                'total_orders' => Order::where('created_at', '>=', $startDate)->count(),
-                'total_revenue' => Order::where('created_at', '>=', $startDate)
-                    ->where('status', 'paid')
-                    ->sum('total_amount'),
-                'pending_orders' => Order::where('status', 'pending')->count(),
-                'paid_orders' => Order::where('status', 'paid')->count(),
-                'shipped_orders' => Order::where('status', 'shipped')->count(),
-                'delivered_orders' => Order::where('status', 'delivered')->count(),
-                'cancelled_orders' => Order::where('status', 'cancelled')->count(),
-                'average_order_value' => Order::where('created_at', '>=', $startDate)
-                    ->where('status', 'paid')
-                    ->avg('total_amount'),
-                'orders_by_status' => Order::selectRaw('status, COUNT(*) as count')
+                'total_orders' => $baseQuery->count(),
+                'total_revenue' => $baseQuery->where('status', 'paid')->sum('total_amount'),
+                'pending_orders' => $baseQuery->where('status', 'pending')->count(),
+                'paid_orders' => $baseQuery->where('status', 'paid')->count(),
+                'shipped_orders' => $baseQuery->where('status', 'shipped')->count(),
+                'delivered_orders' => $baseQuery->where('status', 'delivered')->count(),
+                'cancelled_orders' => $baseQuery->where('status', 'cancelled')->count(),
+                'average_order_value' => $baseQuery->where('status', 'paid')->avg('total_amount'),
+                'orders_by_status' => $baseQuery->selectRaw('status, COUNT(*) as count')
                     ->groupBy('status')
                     ->get()
                     ->pluck('count', 'status'),
-                'recent_orders' => Order::with(['orderItems.product'])
+                'recent_orders' => $baseQuery->with(['orderItems.product'])
                     ->orderBy('created_at', 'desc')
                     ->limit(10)
-                    ->get()
+                    ->get(),
+                'filters_applied' => [
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                    'start_date' => $request->get('start_date'),
+                    'end_date' => $request->get('end_date'),
+                    'period' => $request->get('period'),
+                    'date_range' => [
+                        'start' => $startDate->toDateString(),
+                        'end' => $endDate->toDateString()
+                    ]
+                ]
             ];
 
             return response()->json([
