@@ -71,15 +71,32 @@ class CustomerService
             }
             
             // Create new customer
-            $customer = Customer::create([
+            $customerData = [
                 'name' => $orderData['customer_name'],
                 'phone' => $phone,
-                'email' => $orderData['customer_email'] ?? null,
                 'address' => $orderData['shipping_address'] ?? null,
                 'is_active' => true,
                 'phone_verified' => false,
                 'email_verified' => false,
-            ]);
+            ];
+            
+            // Handle email for new customer - check for duplicates
+            if (isset($orderData['customer_email']) && !empty($orderData['customer_email'])) {
+                $existingCustomerWithEmail = Customer::where('email', $orderData['customer_email'])->first();
+                
+                if (!$existingCustomerWithEmail) {
+                    $customerData['email'] = $orderData['customer_email'];
+                } else {
+                    Log::warning('Email already exists when creating new customer', [
+                        'email' => $orderData['customer_email'],
+                        'existing_customer_id' => $existingCustomerWithEmail->id,
+                        'new_phone' => $phone
+                    ]);
+                    // Don't set email to avoid duplicate constraint violation
+                }
+            }
+            
+            $customer = Customer::create($customerData);
             
             Log::info('Created new customer for order', [
                 'customer_id' => $customer->id,
