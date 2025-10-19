@@ -279,19 +279,19 @@ class OrderController extends Controller
             $baseQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
 
             $stats = [
-                'total_orders' => $baseQuery->count(),
-                'total_revenue' => $baseQuery->where('status', 'paid')->sum('total_amount'),
-                'pending_orders' => $baseQuery->where('status', 'pending')->count(),
-                'paid_orders' => $baseQuery->where('status', 'paid')->count(),
-                'shipped_orders' => $baseQuery->where('status', 'shipped')->count(),
-                'delivered_orders' => $baseQuery->where('status', 'delivered')->count(),
-                'cancelled_orders' => $baseQuery->where('status', 'cancelled')->count(),
-                'average_order_value' => $baseQuery->where('status', 'paid')->avg('total_amount'),
-                'orders_by_status' => $baseQuery->selectRaw('status, COUNT(*) as count')
+                'total_orders' => (clone $baseQuery)->count(),
+                'total_revenue' => (clone $baseQuery)->where('status', 'paid')->sum('total_amount'),
+                'pending_orders' => (clone $baseQuery)->where('status', 'pending')->count(),
+                'paid_orders' => (clone $baseQuery)->where('status', 'paid')->count(),
+                'shipped_orders' => (clone $baseQuery)->where('status', 'shipped')->count(),
+                'delivered_orders' => (clone $baseQuery)->where('status', 'delivered')->count(),
+                'cancelled_orders' => (clone $baseQuery)->where('status', 'cancelled')->count(),
+                'average_order_value' => (clone $baseQuery)->where('status', 'paid')->avg('total_amount'),
+                'orders_by_status' => (clone $baseQuery)->selectRaw('status, COUNT(*) as count')
                     ->groupBy('status')
                     ->get()
                     ->pluck('count', 'status'),
-                'recent_orders' => $baseQuery->with(['orderItems.product'])
+                'recent_orders' => (clone $baseQuery)->with(['orderItems.product'])
                     ->orderBy('created_at', 'desc')
                     ->limit(10)
                     ->get(),
