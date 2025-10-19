@@ -40,6 +40,15 @@ class OrderController extends Controller
                 $query->whereDate('created_at', '<=', $request->date_to);
             }
 
+            // Also support start_date and end_date parameters
+            if ($request->has('start_date') && $request->start_date) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->has('end_date') && $request->end_date) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
             // Search by order number, customer name, or phone
             if ($request->has('search') && $request->search) {
                 $searchTerm = $request->search;
@@ -68,6 +77,15 @@ class OrderController extends Controller
 
             if ($request->has('date_to') && $request->date_to) {
                 $baseStatsQuery->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            // Also support start_date and end_date parameters for statistics
+            if ($request->has('start_date') && $request->start_date) {
+                $baseStatsQuery->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->has('end_date') && $request->end_date) {
+                $baseStatsQuery->whereDate('created_at', '<=', $request->end_date);
             }
 
             if ($request->has('search') && $request->search) {
@@ -100,6 +118,8 @@ class OrderController extends Controller
                     'status' => $request->status ?? null,
                     'date_from' => $request->date_from ?? null,
                     'date_to' => $request->date_to ?? null,
+                    'start_date' => $request->start_date ?? null,
+                    'end_date' => $request->end_date ?? null,
                     'search' => $request->search ?? null
                 ]
             ];
