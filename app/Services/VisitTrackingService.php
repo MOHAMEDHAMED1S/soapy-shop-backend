@@ -90,7 +90,7 @@ class VisitTrackingService
     }
 
     /**
-     * Determine referer type based on domain
+     * Determine referer type based on domain using intelligent pattern matching
      */
     private function determineRefererType(?string $domain): string
     {
@@ -98,17 +98,67 @@ class VisitTrackingService
             return 'direct';
         }
 
-        $socialPlatforms = [
-            'facebook' => ['facebook.com', 'fb.com', 'm.facebook.com'],
-            'instagram' => ['instagram.com', 'instagr.am'],
-            'twitter' => ['twitter.com', 't.co', 'x.com'],
+        // Convert to lowercase for case-insensitive matching
+        $domain = strtolower($domain);
+
+        // Define intelligent patterns for each platform
+        $platformPatterns = [
+            'facebook' => [
+                'exact_domains' => ['facebook.com', 'fb.com', 'm.facebook.com', 'www.facebook.com', 'mobile.facebook.com', 'touch.facebook.com', 'mbasic.facebook.com'],
+                'keywords' => ['faceb', 'fb.', '.fb'],
+                'contains' => ['facebook']
+            ],
+            'instagram' => [
+                'exact_domains' => ['instagram.com', 'instagr.am', 'www.instagram.com', 'm.instagram.com'],
+                'keywords' => ['insta', 'instagr'],
+                'contains' => ['instagram']
+            ],
+            'twitter' => [
+                'exact_domains' => ['twitter.com', 't.co', 'x.com', 'mobile.twitter.com', 'www.twitter.com', 'www.x.com', 'm.twitter.com'],
+                'keywords' => ['twitt', 'twitter', 'x.com'],
+                'contains' => ['twitter']
+            ],
+            'snapchat' => [
+                'exact_domains' => ['snapchat.com', 'www.snapchat.com', 'm.snapchat.com', 'snap.com'],
+                'keywords' => ['snap', 'snapch'],
+                'contains' => ['snapchat', 'snap']
+            ]
         ];
 
-        foreach ($socialPlatforms as $platform => $domains) {
-            foreach ($domains as $platformDomain) {
-                if ($domain === $platformDomain || str_ends_with($domain, '.' . $platformDomain)) {
+        // Check each platform using intelligent matching
+        foreach ($platformPatterns as $platform => $patterns) {
+            // 1. Check exact domain matches
+            if (in_array($domain, $patterns['exact_domains'])) {
+                return $platform;
+            }
+
+            // 2. Check if domain ends with any of the exact domains (for subdomains)
+            foreach ($patterns['exact_domains'] as $exactDomain) {
+                if (str_ends_with($domain, '.' . $exactDomain)) {
                     return $platform;
                 }
+            }
+
+            // 3. Check keyword patterns (intelligent matching)
+            foreach ($patterns['keywords'] as $keyword) {
+                if (str_contains($domain, $keyword)) {
+                    return $platform;
+                }
+            }
+
+            // 4. Check contains patterns (broader matching)
+            foreach ($patterns['contains'] as $containsPattern) {
+                if (str_contains($domain, $containsPattern)) {
+                    return $platform;
+                }
+            }
+        }
+
+        // Check for search engines
+        $searchEngines = ['google.com', 'bing.com', 'yahoo.com', 'duckduckgo.com', 'yandex.com', 'baidu.com'];
+        foreach ($searchEngines as $searchDomain) {
+            if ($domain === $searchDomain || str_ends_with($domain, '.' . $searchDomain)) {
+                return 'search';
             }
         }
 
