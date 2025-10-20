@@ -46,6 +46,17 @@ Route::prefix('v1')->group(function () {
     Route::post('/visits/track', [\App\Http\Controllers\VisitController::class, 'track']);
     Route::get('/visits/pixel.gif', [\App\Http\Controllers\VisitController::class, 'pixel']);
     
+    // Analytics (Public)
+    Route::get('/analytics/statistics', [\App\Http\Controllers\AnalyticsController::class, 'statistics']);
+    Route::get('/analytics/pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
+    Route::get('/analytics/popular-pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
+    Route::get('/analytics/realtime', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
+    Route::get('/analytics/real-time', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
+    Route::get('/analytics/referer-types', [\App\Http\Controllers\AnalyticsController::class, 'visitsByRefererType']);
+    Route::get('/analytics/top-referer-domains', [\App\Http\Controllers\AnalyticsController::class, 'topRefererDomains']);
+    Route::get('/analytics/daily-visits', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']);
+    Route::get('/analytics/device-stats', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
+    
     // Payments
     Route::get('/payments/methods', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'getPaymentMethods']);
     Route::post('/payments/initiate', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'initiatePayment']);
