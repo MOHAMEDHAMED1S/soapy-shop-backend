@@ -45,6 +45,7 @@ Route::prefix('v1')->group(function () {
     // Visit Tracking (Public)
     Route::post('/visits/track', [\App\Http\Controllers\VisitController::class, 'track']);
     Route::get('/visits/pixel.gif', [\App\Http\Controllers\VisitController::class, 'pixel']);
+    Route::post('/visits/pixel', [\App\Http\Controllers\VisitController::class, 'pixel']);
     
     // Payments
     Route::get('/payments/methods', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'getPaymentMethods']);

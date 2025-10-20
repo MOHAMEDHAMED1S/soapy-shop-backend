@@ -17,6 +17,7 @@ $endpoints = [
     '/api/v1/analytics/referers' => 'Referers (alias)',
     '/api/v1/analytics/top-referer-domains' => 'Top Referer Domains',
     '/api/v1/analytics/daily-visits' => 'Daily Visits',
+    '/api/v1/analytics/daily' => 'Daily (alias)',
     '/api/v1/analytics/device-stats' => 'Device Statistics',
     '/api/v1/analytics/devices' => 'Devices (alias)'
 ];
