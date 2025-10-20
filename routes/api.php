@@ -162,15 +162,14 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/me', [\App\Http\Controllers\Api\Admin\AuthController::class, 'me']);
     
     // Visit Analytics (Admin)
-    Route::prefix('analytics/visits')->group(function () {
-        Route::get('/statistics', [\App\Http\Controllers\AnalyticsController::class, 'statistics']);
-        Route::get('/referer-types', [\App\Http\Controllers\AnalyticsController::class, 'visitsByRefererType']);
-        Route::get('/top-referers', [\App\Http\Controllers\AnalyticsController::class, 'topRefererDomains']);
-        Route::get('/daily', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']);
-        Route::get('/popular-pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
-        Route::get('/real-time', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
-        Route::get('/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
-    });
+        Route::get('analytics/visits/statistics', [\App\Http\Controllers\AnalyticsController::class, 'statistics']);
+        Route::get('analytics/visits/referer-types', [\App\Http\Controllers\AnalyticsController::class, 'visitsByRefererType']);
+        Route::get('analytics/visits/top-referers', [\App\Http\Controllers\AnalyticsController::class, 'topRefererDomains']);
+        Route::get('analytics/visits/daily', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']);
+        Route::get('analytics/visits/popular-pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
+        Route::get('analytics/visits/real-time', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
+        Route::get('analytics/visits/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
+    
     
     // Orders
     Route::get('/orders', [\App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
