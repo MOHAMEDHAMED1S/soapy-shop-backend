@@ -149,6 +149,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::options('/categories/{id}/toggle-status', function () { return response('', 204); });
     Route::post('/categories/update-sort-order', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'updateSortOrder']);
     
+    // OPTIONS routes for visit analytics
+    Route::options('/analytics/visits/statistics', function () { return response('', 204); });
+    Route::options('/analytics/visits/referer-types', function () { return response('', 204); });
+    Route::options('/analytics/visits/top-referers', function () { return response('', 204); });
+    Route::options('/analytics/visits/daily', function () { return response('', 204); });
+    Route::options('/analytics/visits/popular-pages', function () { return response('', 204); });
+    Route::options('/analytics/visits/real-time', function () { return response('', 204); });
+    Route::options('/analytics/visits/devices', function () { return response('', 204); });
+    
     // Auth
     Route::get('/me', [\App\Http\Controllers\Api\Admin\AuthController::class, 'me']);
     
@@ -161,15 +170,6 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
         Route::get('/popular-pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
         Route::get('/real-time', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
         Route::get('/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
-        
-        // OPTIONS routes for CORS
-        Route::options('/statistics', function () { return response('', 204); });
-        Route::options('/referer-types', function () { return response('', 204); });
-        Route::options('/top-referers', function () { return response('', 204); });
-        Route::options('/daily', function () { return response('', 204); });
-        Route::options('/popular-pages', function () { return response('', 204); });
-        Route::options('/real-time', function () { return response('', 204); });
-        Route::options('/devices', function () { return response('', 204); });
     });
     
     // Orders

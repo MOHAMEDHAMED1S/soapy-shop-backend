@@ -48,14 +48,7 @@ async function trackVisit() {
 document.addEventListener('DOMContentLoaded', trackVisit);
 ```
 
-### الطريقة الثانية: Pixel Tracking (صامت)
 
-```html
-<!-- إضافة هذا الكود في <head> أو قبل إغلاق </body> -->
-<img src="/api/v1/visits/pixel.gif" 
-     style="width:1px;height:1px;position:absolute;left:-9999px;" 
-     alt="" />
-```
 
 ### الطريقة الثالثة: تتبع متقدم مع معلومات إضافية
 
