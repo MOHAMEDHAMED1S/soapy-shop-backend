@@ -39,7 +39,7 @@ class VisitTrackingService
             'referer_url' => $refererUrl,
             'referer_domain' => $refererData['domain'],
             'referer_type' => $refererData['type'],
-            'page_url' => $request->get('page_url', $request->url()),
+            'page_url' => $request->get('page_url') ?: $request->get('url'),
             'page_title' => $request->get('page_title'),
             'session_id' => $request->get('session_id') ?: ($request->hasSession() ? $request->session()->getId() : 'no-session-' . uniqid()),
             'country' => $this->getCountryFromIp($this->getClientIp($request)),
