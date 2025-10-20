@@ -128,8 +128,16 @@ class DatabaseManagementController extends Controller
 
             $countBefore = DB::table($tableName)->count();
             
-            // تفريغ الجدول
-            DB::table($tableName)->truncate();
+            // Handle foreign key constraints by temporarily disabling them
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            
+            try {
+                // تفريغ الجدول
+                DB::table($tableName)->truncate();
+            } finally {
+                // Always re-enable foreign key checks
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            }
             
             $countAfter = DB::table($tableName)->count();
 
