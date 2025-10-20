@@ -30,7 +30,7 @@ class VisitTrackingService
      */
     private function extractVisitData(Request $request): array
     {
-        $refererUrl = $request->header('referer') ?: $request->get('referer');
+        $refererUrl = $request->header('referer') ?: $request->get('referer') ?: $request->get('referrer_url');
         $refererData = $this->analyzeReferer($refererUrl);
         
         return [
