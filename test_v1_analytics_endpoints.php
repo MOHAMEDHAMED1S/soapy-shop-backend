@@ -8,21 +8,24 @@
 $baseUrl = 'http://localhost:8000';
 $endpoints = [
     '/api/v1/analytics/statistics' => 'Statistics',
+    '/api/v1/analytics/general' => 'General Statistics (alias)',
     '/api/v1/analytics/pages' => 'Popular Pages (pages)',
     '/api/v1/analytics/popular-pages' => 'Popular Pages (popular-pages)',
     '/api/v1/analytics/realtime' => 'Real-time Analytics (realtime)',
     '/api/v1/analytics/real-time' => 'Real-time Analytics (real-time)',
     '/api/v1/analytics/referer-types' => 'Referer Types',
+    '/api/v1/analytics/referers' => 'Referers (alias)',
     '/api/v1/analytics/top-referer-domains' => 'Top Referer Domains',
     '/api/v1/analytics/daily-visits' => 'Daily Visits',
-    '/api/v1/analytics/device-stats' => 'Device Statistics'
+    '/api/v1/analytics/device-stats' => 'Device Statistics',
+    '/api/v1/analytics/devices' => 'Devices (alias)'
 ];
 
 $passedTests = 0;
 $totalTests = count($endpoints);
 
-echo "🧪 Testing V1 Analytics Endpoints\n";
-echo "================================\n\n";
+echo "🧪 Testing V1 Analytics Endpoints (Final Update)\n";
+echo "===============================================\n\n";
 
 foreach ($endpoints as $endpoint => $name) {
     echo "Testing: {$name}\n";

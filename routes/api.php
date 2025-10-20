@@ -77,7 +77,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/analytics/referers', [\App\Http\Controllers\AnalyticsController::class, 'topRefererDomains']); // Alias for referers
     Route::get('/analytics/top-referer-domains', [\App\Http\Controllers\AnalyticsController::class, 'topRefererDomains']);
     Route::get('/analytics/daily-visits', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']);
+    Route::get('/analytics/daily', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']); // Alias for daily
     Route::get('/analytics/device-stats', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
+    Route::get('/analytics/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']); // Alias for devices
     
     // Data Export System (Public)
     Route::prefix('exports')->group(function () {
