@@ -81,6 +81,16 @@ Route::prefix('v1')->group(function () {
     Route::get('/analytics/daily', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']); // Alias for daily
     Route::get('/analytics/device-stats', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
     Route::get('/analytics/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']); // Alias for devices
+    Route::get('/analytics/social-visits', [\App\Http\Controllers\AnalyticsController::class, 'socialVisits']);
+    Route::get('/analytics/social', [\App\Http\Controllers\AnalyticsController::class, 'socialVisits']); // Alias for social
+    
+    // Database Management (Temporary - for development only)
+    Route::prefix('temp-db')->group(function () {
+        Route::get('/tables', [\App\Http\Controllers\DatabaseManagementController::class, 'getTables']);
+        Route::get('/tables/{tableName}', [\App\Http\Controllers\DatabaseManagementController::class, 'getTableData']);
+        Route::post('/tables/{tableName}/truncate', [\App\Http\Controllers\DatabaseManagementController::class, 'truncateTable']);
+        Route::delete('/tables/{tableName}/records', [\App\Http\Controllers\DatabaseManagementController::class, 'deleteRecords']);
+    });
     
     // Data Export System (Public)
     Route::prefix('exports')->group(function () {
@@ -173,6 +183,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::options('/analytics/visits/popular-pages', function () { return response('', 204); });
     Route::options('/analytics/visits/real-time', function () { return response('', 204); });
     Route::options('/analytics/visits/devices', function () { return response('', 204); });
+    Route::options('/analytics/visits/social', function () { return response('', 204); });
     
     // Auth
     Route::get('/me', [\App\Http\Controllers\Api\Admin\AuthController::class, 'me']);
@@ -185,6 +196,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
         Route::get('analytics/visits/popular-pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
         Route::get('analytics/visits/real-time', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
         Route::get('analytics/visits/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
+        Route::get('analytics/visits/social', [\App\Http\Controllers\AnalyticsController::class, 'socialVisits']);
     
     
     // Orders

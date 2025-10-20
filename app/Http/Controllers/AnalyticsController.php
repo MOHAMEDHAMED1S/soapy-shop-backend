@@ -157,6 +157,184 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Get visits from specific social media platforms
+     */
+    public function socialVisits(Request $request): JsonResponse
+    {
+        $request->validate([
+            'platforms' => 'nullable|array',
+            'platforms.*' => 'in:facebook,instagram,twitter,snapchat,other',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'group_by' => 'nullable|in:platform,date,both'
+        ]);
+
+        $platforms = $request->get('platforms', ['facebook', 'instagram', 'twitter', 'snapchat', 'other']);
+        $startDate = $request->get('start_date', Carbon::now()->subDays(30));
+        $endDate = $request->get('end_date', Carbon::now());
+        $groupBy = $request->get('group_by', 'platform');
+
+        // Build the query for social media visits
+        $query = Visit::dateRange($startDate, $endDate);
+
+        // Filter by social media platforms using intelligent referrer filtering
+        $query->where(function ($q) use ($platforms) {
+            foreach ($platforms as $platform) {
+                switch ($platform) {
+                    case 'facebook':
+                        $q->orWhere('referer_url', 'LIKE', '%facebook.com%')
+                          ->orWhere('referer_url', 'LIKE', '%fb.com%')
+                          ->orWhere('referer_url', 'LIKE', '%m.facebook.com%')
+                          ->orWhere('referer_url', 'LIKE', '%l.facebook.com%');
+                        break;
+                    case 'instagram':
+                        $q->orWhere('referer_url', 'LIKE', '%instagram.com%')
+                          ->orWhere('referer_url', 'LIKE', '%instagr.am%');
+                        break;
+                    case 'twitter':
+                        $q->orWhere('referer_url', 'LIKE', '%twitter.com%')
+                          ->orWhere('referer_url', 'LIKE', '%t.co%')
+                          ->orWhere('referer_url', 'LIKE', '%x.com%');
+                        break;
+                    case 'snapchat':
+                        $q->orWhere('referer_url', 'LIKE', '%snapchat.com%')
+                          ->orWhere('referer_url', 'LIKE', '%snap.com%');
+                        break;
+                    case 'other':
+                        $q->orWhere('referer_type', 'other');
+                        break;
+                }
+            }
+        });
+
+        // Group results based on the group_by parameter
+        switch ($groupBy) {
+            case 'date':
+                $results = $query->selectRaw('DATE(visited_at) as date, COUNT(*) as visits, COUNT(DISTINCT ip_address) as unique_visitors')
+                    ->groupBy('date')
+                    ->orderBy('date')
+                    ->get();
+                break;
+            
+            case 'both':
+                $results = $query->selectRaw('
+                    DATE(visited_at) as date,
+                    CASE 
+                        WHEN referer_url LIKE "%facebook.com%" OR referer_url LIKE "%fb.com%" OR referer_url LIKE "%m.facebook.com%" OR referer_url LIKE "%l.facebook.com%" THEN "facebook"
+                        WHEN referer_url LIKE "%instagram.com%" OR referer_url LIKE "%instagr.am%" THEN "instagram"
+                        WHEN referer_url LIKE "%twitter.com%" OR referer_url LIKE "%t.co%" OR referer_url LIKE "%x.com%" THEN "twitter"
+                        WHEN referer_url LIKE "%snapchat.com%" OR referer_url LIKE "%snap.com%" THEN "snapchat"
+                        ELSE "other"
+                    END as platform,
+                    COUNT(*) as visits,
+                    COUNT(DISTINCT ip_address) as unique_visitors
+                ')
+                    ->groupBy('date', 'platform')
+                    ->orderBy('date')
+                    ->orderBy('platform')
+                    ->get();
+                break;
+            
+            default: // platform
+                $results = $query->selectRaw('
+                    CASE 
+                        WHEN referer_url LIKE "%facebook.com%" OR referer_url LIKE "%fb.com%" OR referer_url LIKE "%m.facebook.com%" OR referer_url LIKE "%l.facebook.com%" THEN "facebook"
+                        WHEN referer_url LIKE "%instagram.com%" OR referer_url LIKE "%instagr.am%" THEN "instagram"
+                        WHEN referer_url LIKE "%twitter.com%" OR referer_url LIKE "%t.co%" OR referer_url LIKE "%x.com%" THEN "twitter"
+                        WHEN referer_url LIKE "%snapchat.com%" OR referer_url LIKE "%snap.com%" THEN "snapchat"
+                        ELSE "other"
+                    END as platform,
+                    COUNT(*) as visits,
+                    COUNT(DISTINCT ip_address) as unique_visitors
+                ')
+                    ->groupBy('platform')
+                    ->orderByDesc('visits')
+                    ->get();
+                break;
+        }
+
+        // Get summary statistics
+        $totalVisits = Visit::dateRange($startDate, $endDate)
+            ->where(function ($q) use ($platforms) {
+                foreach ($platforms as $platform) {
+                    switch ($platform) {
+                        case 'facebook':
+                            $q->orWhere('referer_url', 'LIKE', '%facebook.com%')
+                              ->orWhere('referer_url', 'LIKE', '%fb.com%')
+                              ->orWhere('referer_url', 'LIKE', '%m.facebook.com%')
+                              ->orWhere('referer_url', 'LIKE', '%l.facebook.com%');
+                            break;
+                        case 'instagram':
+                            $q->orWhere('referer_url', 'LIKE', '%instagram.com%')
+                              ->orWhere('referer_url', 'LIKE', '%instagr.am%');
+                            break;
+                        case 'twitter':
+                            $q->orWhere('referer_url', 'LIKE', '%twitter.com%')
+                              ->orWhere('referer_url', 'LIKE', '%t.co%')
+                              ->orWhere('referer_url', 'LIKE', '%x.com%');
+                            break;
+                        case 'snapchat':
+                            $q->orWhere('referer_url', 'LIKE', '%snapchat.com%')
+                              ->orWhere('referer_url', 'LIKE', '%snap.com%');
+                            break;
+                        case 'other':
+                            $q->orWhere('referer_type', 'other');
+                            break;
+                    }
+                }
+            })
+            ->count();
+            
+        $uniqueVisitors = Visit::dateRange($startDate, $endDate)
+            ->where(function ($q) use ($platforms) {
+                foreach ($platforms as $platform) {
+                    switch ($platform) {
+                        case 'facebook':
+                            $q->orWhere('referer_url', 'LIKE', '%facebook.com%')
+                              ->orWhere('referer_url', 'LIKE', '%fb.com%')
+                              ->orWhere('referer_url', 'LIKE', '%m.facebook.com%')
+                              ->orWhere('referer_url', 'LIKE', '%l.facebook.com%');
+                            break;
+                        case 'instagram':
+                            $q->orWhere('referer_url', 'LIKE', '%instagram.com%')
+                              ->orWhere('referer_url', 'LIKE', '%instagr.am%');
+                            break;
+                        case 'twitter':
+                            $q->orWhere('referer_url', 'LIKE', '%twitter.com%')
+                              ->orWhere('referer_url', 'LIKE', '%t.co%')
+                              ->orWhere('referer_url', 'LIKE', '%x.com%');
+                            break;
+                        case 'snapchat':
+                            $q->orWhere('referer_url', 'LIKE', '%snapchat.com%')
+                              ->orWhere('referer_url', 'LIKE', '%snap.com%');
+                            break;
+                        case 'other':
+                            $q->orWhere('referer_type', 'other');
+                            break;
+                    }
+                }
+            })
+            ->distinct('ip_address')
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'results' => $results,
+                'summary' => [
+                    'total_visits' => $totalVisits,
+                    'unique_visitors' => $uniqueVisitors,
+                    'date_range' => [
+                        'start_date' => $startDate,
+                        'end_date' => $endDate
+                    ],
+                    'platforms_filtered' => $platforms
+                ]
+            ]
+        ]);
+    }
+
+    /**
      * Get device and browser statistics
      */
     public function deviceStats(Request $request): JsonResponse
