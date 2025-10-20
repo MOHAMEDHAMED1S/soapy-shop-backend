@@ -42,6 +42,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/debug/create-test-order', [\App\Http\Controllers\Api\OrderController::class, 'createTestOrder']);
     Route::get('/debug/orders', [\App\Http\Controllers\Api\OrderController::class, 'listOrders']);
     
+    // Visit Tracking (Public)
+    Route::post('/visits/track', [\App\Http\Controllers\VisitController::class, 'track']);
+    Route::get('/visits/pixel.gif', [\App\Http\Controllers\VisitController::class, 'pixel']);
+    
     // Payments
     Route::get('/payments/methods', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'getPaymentMethods']);
     Route::post('/payments/initiate', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'initiatePayment']);
@@ -147,6 +151,26 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     
     // Auth
     Route::get('/me', [\App\Http\Controllers\Api\Admin\AuthController::class, 'me']);
+    
+    // Visit Analytics (Admin)
+    Route::prefix('analytics/visits')->group(function () {
+        Route::get('/statistics', [\App\Http\Controllers\AnalyticsController::class, 'statistics']);
+        Route::get('/referer-types', [\App\Http\Controllers\AnalyticsController::class, 'visitsByRefererType']);
+        Route::get('/top-referers', [\App\Http\Controllers\AnalyticsController::class, 'topRefererDomains']);
+        Route::get('/daily', [\App\Http\Controllers\AnalyticsController::class, 'dailyVisits']);
+        Route::get('/popular-pages', [\App\Http\Controllers\AnalyticsController::class, 'popularPages']);
+        Route::get('/real-time', [\App\Http\Controllers\AnalyticsController::class, 'realTime']);
+        Route::get('/devices', [\App\Http\Controllers\AnalyticsController::class, 'deviceStats']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/statistics', function () { return response('', 204); });
+        Route::options('/referer-types', function () { return response('', 204); });
+        Route::options('/top-referers', function () { return response('', 204); });
+        Route::options('/daily', function () { return response('', 204); });
+        Route::options('/popular-pages', function () { return response('', 204); });
+        Route::options('/real-time', function () { return response('', 204); });
+        Route::options('/devices', function () { return response('', 204); });
+    });
     
     // Orders
     Route::get('/orders', [\App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
