@@ -47,6 +47,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/visits/pixel.gif', [\App\Http\Controllers\VisitController::class, 'pixel']);
     Route::post('/visits/pixel', [\App\Http\Controllers\VisitController::class, 'pixel']);
     
+    // Sitemap (Public)
+    Route::get('/sitemap.xml', [\App\Http\Controllers\Api\SitemapController::class, 'index']);
+    Route::get('/sitemap/index.xml', [\App\Http\Controllers\Api\SitemapController::class, 'sitemapIndex']);
+    Route::get('/sitemap/products.xml', [\App\Http\Controllers\Api\SitemapController::class, 'productsSitemap']);
+    
     // Payments
     Route::get('/payments/methods', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'getPaymentMethods']);
     Route::post('/payments/initiate', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'initiatePayment']);
