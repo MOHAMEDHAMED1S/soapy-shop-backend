@@ -52,6 +52,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/sitemap/index.xml', [\App\Http\Controllers\Api\SitemapController::class, 'sitemapIndex']);
     Route::get('/sitemap/products.xml', [\App\Http\Controllers\Api\SitemapController::class, 'productsSitemap']);
     
+    // Chatbot APIs (Public)
+    Route::prefix('chat')->group(function () {
+        Route::post('/start', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'startChat']);
+        Route::post('/message', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'sendMessage']);
+        Route::get('/history', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'getHistory']);
+        Route::post('/end', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'endChat']);
+        Route::get('/settings', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'getSettings']);
+    });
+    
     // Payments
     Route::get('/payments/methods', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'getPaymentMethods']);
     Route::post('/payments/initiate', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'initiatePayment']);
@@ -433,6 +442,37 @@ Route::prefix('v1/admin')->group(function () {
     Route::options('/login', function () { return response('', 204); });
 
     Route::post('/login', [\App\Http\Controllers\Api\Admin\AuthController::class, 'login']);
+    
+    // Chatbot Management APIs (Admin)
+    Route::prefix('chatbot')->group(function () {
+        // Settings management
+        Route::get('/settings', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'getSettings']);
+        Route::put('/settings', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'updateSettings']);
+        
+        // Statistics and analytics
+        Route::get('/statistics', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'getStatistics']);
+        
+        // Conversation management
+        Route::get('/conversations', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'getConversations']);
+        Route::get('/conversations/{id}', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'getConversation']);
+        Route::delete('/conversations/{id}', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'deleteConversation']);
+        Route::delete('/conversations/clear-old', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'clearOldConversations']);
+        
+        // Product management for chatbot
+        Route::get('/products', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'getAvailableProducts']);
+        
+        // Configuration testing
+        Route::post('/test', [\App\Http\Controllers\Admin\ChatbotAdminController::class, 'testConfiguration']);
+        
+        // CORS preflight routes
+        Route::options('/settings', function () { return response('', 204); });
+        Route::options('/statistics', function () { return response('', 204); });
+        Route::options('/conversations', function () { return response('', 204); });
+        Route::options('/conversations/{id}', function () { return response('', 204); });
+        Route::options('/products', function () { return response('', 204); });
+        Route::options('/test', function () { return response('', 204); });
+        Route::options('/conversations/clear-old', function () { return response('', 204); });
+    });
 });
 // OPTIONS routes for all admin endpoints
 Route::prefix('v1')->group(function () {

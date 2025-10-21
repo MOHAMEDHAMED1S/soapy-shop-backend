@@ -1,0 +1,2628 @@
+🤖 Starting Chatbot API Tests...
+Base URL: http://localhost:8000/api/v1
+
+📋 Testing Public APIs...
+
+============================================================
+TEST: Get Chatbot Settings
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "is_active": true,
+        "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟",
+        "max_conversation_length": 50
+    }
+}
+
+============================================================
+TEST: Start Chat
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "conversation_id": 15,
+        "session_id": "tKQTLfwBynKRLuYfEqlQOievOVLb3PMa",
+        "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟",
+        "chatbot_name": "Chatbot Assistant"
+    }
+}
+
+============================================================
+TEST: Send Message
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "message": {
+            "id": 10,
+            "role": "assistant",
+            "content": "أهلاً بك! يسعدني مساعدتك في التعرف على منتجاتنا.\n\nلدينا مجموعة واسعة من منتجات الصابون والعناية بالجسم، وتشمل:\n\n*   **صابون اليدين:** بأنواع وروائح مختلفة.\n*   **صابون الجسم الطبيعي:** على شكل قطع صابون أو جل استحمام، بتركيبات غنية ومرطبة.\n*   **كرات الاستحمام الفوارة (Bath Bombs):** لتجربة استحمام ممتعة ومنعشة.\n*   **أملاح الاستحمام:** للاسترخاء وتنقية البشرة.\n*   **منتجات العناية بالجسم:** مثل اللوشن والكريمات المرطبة.\n*   **الشامبو والبلسم:** بتركيبات طبيعية للعناية بالشعر.\n\nهل تبحث عن نوع معين من الصابون، أو لديك اهتمام بمنتجات ذات مكونات محددة (مثل الطبيعية، العضوية) أو روائح معينة؟",
+            "metadata": {
+                "recommended_products": [
+                    {
+                        "id": 1,
+                        "name": null,
+                        "slug": "vitamin-c-face-moisturizer",
+                        "price": "25.500",
+                        "image": null,
+                        "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                    },
+                    {
+                        "id": 2,
+                        "name": null,
+                        "slug": "anti-aging-retinol-serum",
+                        "price": "35.750",
+                        "image": null,
+                        "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                    },
+                    {
+                        "id": 3,
+                        "name": null,
+                        "slug": "activated-charcoal-face-cleanser",
+                        "price": "18.250",
+                        "image": null,
+                        "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                    }
+                ]
+            },
+            "sent_at": "2025-10-21T18:39:17.000000Z"
+        },
+        "conversation_status": "active"
+    }
+}
+
+============================================================
+TEST: Get Chat History
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "conversation": {
+            "session_id": "tKQTLfwBynKRLuYfEqlQOievOVLb3PMa",
+            "status": "active",
+            "message_count": 2,
+            "created_at": "2025-10-21T18:39:08.000000Z",
+            "last_activity_at": "2025-10-21T18:39:18.000000Z"
+        },
+        "messages": {
+            "session_id": "tKQTLfwBynKRLuYfEqlQOievOVLb3PMa",
+            "status": "active",
+            "messages": [
+                {
+                    "id": 9,
+                    "role": "user",
+                    "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                    "metadata": null,
+                    "sent_at": "2025-10-21T18:39:09.000000Z"
+                },
+                {
+                    "id": 10,
+                    "role": "assistant",
+                    "content": "أهلاً بك! يسعدني مساعدتك في التعرف على منتجاتنا.\n\nلدينا مجموعة واسعة من منتجات الصابون والعناية بالجسم، وتشمل:\n\n*   **صابون اليدين:** بأنواع وروائح مختلفة.\n*   **صابون الجسم الطبيعي:** على شكل قطع صابون أو جل استحمام، بتركيبات غنية ومرطبة.\n*   **كرات الاستحمام الفوارة (Bath Bombs):** لتجربة استحمام ممتعة ومنعشة.\n*   **أملاح الاستحمام:** للاسترخاء وتنقية البشرة.\n*   **منتجات العناية بالجسم:** مثل اللوشن والكريمات المرطبة.\n*   **الشامبو والبلسم:** بتركيبات طبيعية للعناية بالشعر.\n\nهل تبحث عن نوع معين من الصابون، أو لديك اهتمام بمنتجات ذات مكونات محددة (مثل الطبيعية، العضوية) أو روائح معينة؟",
+                    "metadata": {
+                        "recommended_products": [
+                            {
+                                "id": 1,
+                                "name": null,
+                                "slug": "vitamin-c-face-moisturizer",
+                                "price": "25.500",
+                                "image": null,
+                                "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                            },
+                            {
+                                "id": 2,
+                                "name": null,
+                                "slug": "anti-aging-retinol-serum",
+                                "price": "35.750",
+                                "image": null,
+                                "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                            },
+                            {
+                                "id": 3,
+                                "name": null,
+                                "slug": "activated-charcoal-face-cleanser",
+                                "price": "18.250",
+                                "image": null,
+                                "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                            }
+                        ]
+                    },
+                    "sent_at": "2025-10-21T18:39:17.000000Z"
+                }
+            ]
+        }
+    }
+}
+
+============================================================
+TEST: End Chat
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "message": "Conversation ended successfully"
+}
+
+👨‍💼 Testing Admin APIs...
+
+============================================================
+TEST: Get Admin Settings
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "name": "Chatbot Assistant",
+        "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+        "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟",
+        "is_active": true,
+        "product_access_type": "all",
+        "allowed_product_ids": null,
+        "ai_settings": {
+            "model": "gemini-2.5-flash",
+            "temperature": 0.7,
+            "max_tokens": 2000
+        },
+        "max_conversation_length": 50,
+        "token_limit_per_message": 1000,
+        "created_at": "2025-10-21T18:22:13.000000Z",
+        "updated_at": "2025-10-21T18:22:49.000000Z"
+    }
+}
+
+============================================================
+TEST: Update Admin Settings
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "message": "Chatbot settings updated successfully",
+    "data": {
+        "id": 1,
+        "name": "Chatbot Assistant",
+        "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+        "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟",
+        "is_active": true,
+        "product_access_type": "all",
+        "allowed_product_ids": null,
+        "ai_settings": {
+            "model": "gemini-2.5-flash",
+            "temperature": 0.7,
+            "max_tokens": 2000
+        },
+        "max_conversation_length": 50,
+        "token_limit_per_message": 1000,
+        "created_at": "2025-10-21T18:22:13.000000Z",
+        "updated_at": "2025-10-21T18:22:49.000000Z"
+    }
+}
+
+============================================================
+TEST: Get Statistics
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "total_conversations": 15,
+        "active_conversations": 15,
+        "completed_conversations": 0,
+        "total_messages": 10,
+        "conversations_last_period": 15,
+        "messages_last_period": 10,
+        "average_messages_per_conversation": 0.6666666666666666,
+        "daily_conversations": [
+            {
+                "date": "2025-10-21",
+                "count": 15
+            }
+        ],
+        "popular_conversation_times": [
+            {
+                "hour": 18,
+                "count": 15
+            }
+        ]
+    }
+}
+
+============================================================
+TEST: Get Conversations
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 15,
+                "session_id": "tKQTLfwBynKRLuYfEqlQOievOVLb3PMa",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:39:18.000000Z",
+                "message_count": 2,
+                "created_at": "2025-10-21T18:39:08.000000Z",
+                "updated_at": "2025-10-21T18:39:18.000000Z",
+                "messages": [
+                    {
+                        "id": 9,
+                        "conversation_id": 15,
+                        "role": "user",
+                        "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                        "metadata": null,
+                        "token_count": null,
+                        "sent_at": "2025-10-21T18:39:09.000000Z",
+                        "created_at": "2025-10-21T18:39:09.000000Z",
+                        "updated_at": "2025-10-21T18:39:09.000000Z"
+                    },
+                    {
+                        "id": 10,
+                        "conversation_id": 15,
+                        "role": "assistant",
+                        "content": "أهلاً بك! يسعدني مساعدتك في التعرف على منتجاتنا.\n\nلدينا مجموعة واسعة من منتجات الصابون والعناية بالجسم، وتشمل:\n\n*   **صابون اليدين:** بأنواع وروائح مختلفة.\n*   **صابون الجسم الطبيعي:** على شكل قطع صابون أو جل استحمام، بتركيبات غنية ومرطبة.\n*   **كرات الاستحمام الفوارة (Bath Bombs):** لتجربة استحمام ممتعة ومنعشة.\n*   **أملاح الاستحمام:** للاسترخاء وتنقية البشرة.\n*   **منتجات العناية بالجسم:** مثل اللوشن والكريمات المرطبة.\n*   **الشامبو والبلسم:** بتركيبات طبيعية للعناية بالشعر.\n\nهل تبحث عن نوع معين من الصابون، أو لديك اهتمام بمنتجات ذات مكونات محددة (مثل الطبيعية، العضوية) أو روائح معينة؟",
+                        "metadata": {
+                            "recommended_products": [
+                                {
+                                    "id": 1,
+                                    "name": null,
+                                    "slug": "vitamin-c-face-moisturizer",
+                                    "price": "25.500",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": null,
+                                    "slug": "anti-aging-retinol-serum",
+                                    "price": "35.750",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": null,
+                                    "slug": "activated-charcoal-face-cleanser",
+                                    "price": "18.250",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                                }
+                            ]
+                        },
+                        "token_count": 257,
+                        "sent_at": "2025-10-21T18:39:17.000000Z",
+                        "created_at": "2025-10-21T18:39:17.000000Z",
+                        "updated_at": "2025-10-21T18:39:17.000000Z"
+                    }
+                ]
+            },
+            {
+                "id": 14,
+                "session_id": "X0rKI77HdqdTnYAHNC4FdMcC6s2HRW6B",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:38:50.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:38:50.000000Z",
+                "updated_at": "2025-10-21T18:38:50.000000Z",
+                "messages": []
+            },
+            {
+                "id": 13,
+                "session_id": "omus2tstlx6HGw5fjGYwy3MXn202Lll6",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:38:36.000000Z",
+                "message_count": 2,
+                "created_at": "2025-10-21T18:38:24.000000Z",
+                "updated_at": "2025-10-21T18:38:36.000000Z",
+                "messages": [
+                    {
+                        "id": 7,
+                        "conversation_id": 13,
+                        "role": "user",
+                        "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                        "metadata": null,
+                        "token_count": null,
+                        "sent_at": "2025-10-21T18:38:25.000000Z",
+                        "created_at": "2025-10-21T18:38:25.000000Z",
+                        "updated_at": "2025-10-21T18:38:25.000000Z"
+                    },
+                    {
+                        "id": 8,
+                        "conversation_id": 13,
+                        "role": "assistant",
+                        "content": "أهلاً بك! يسعدني أن أقدم لك نظرة عامة على منتجاتنا المتاحة في متجر الصابون. لدينا تشكيلة واسعة لتلبية جميع احتياجاتك، وتشمل ما يلي:\n\n1.  **صابون الجسم:**\n    *   يتوفر لدينا صابون جسم صلب وسائل، بتركيبات مختلفة للعناية بالبشرة وترطيبها، مثل الصابون المرطب، المقشر، والعطري بمجموعة متنوعة من الروائح.\n2.  **صابون اليدين:**\n    *   بأشكال سائلة وصلبة، مع مجموعة متنوعة من الروائح المنعشة والمطهرة التي تترك يديك نظيفة ومعطرة.\n3.  **منتجات العناية بالوجه:**\n    *   مثل غسولات الوجه اللطيفة المناسبة لأنواع البشرة المختلفة (الجافة، الدهنية، الحساسة) للمساعدة في تنظيف البشرة وإبقائها منتعشة.\n4.  **منتجات الاستحمام الفاخرة:**\n    *   مثل كرات الاستحمام الفوارة وأملاح الاستحمام لتجربة استرخاء فريدة وعطرية.\n\nهل تبحث عن نوع معين من الصابون، أو هل لديك تفضيلات معينة (مثل نوع البشرة، الروائح المفضلة، أو إذا كنت تبحث عن منتج عضوي)؟ يمكنني مساعدتك في العثور على ما يناسبك تمامًا!",
+                        "metadata": {
+                            "recommended_products": [
+                                {
+                                    "id": 1,
+                                    "name": null,
+                                    "slug": "vitamin-c-face-moisturizer",
+                                    "price": "25.500",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": null,
+                                    "slug": "anti-aging-retinol-serum",
+                                    "price": "35.750",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": null,
+                                    "slug": "activated-charcoal-face-cleanser",
+                                    "price": "18.250",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                                }
+                            ]
+                        },
+                        "token_count": 384,
+                        "sent_at": "2025-10-21T18:38:36.000000Z",
+                        "created_at": "2025-10-21T18:38:36.000000Z",
+                        "updated_at": "2025-10-21T18:38:36.000000Z"
+                    }
+                ]
+            },
+            {
+                "id": 12,
+                "session_id": "WdWJzPjdEZp7U4ZgVaoguVmBSali34OD",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:37:02.000000Z",
+                "message_count": 2,
+                "created_at": "2025-10-21T18:36:55.000000Z",
+                "updated_at": "2025-10-21T18:37:02.000000Z",
+                "messages": [
+                    {
+                        "id": 5,
+                        "conversation_id": 12,
+                        "role": "user",
+                        "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                        "metadata": null,
+                        "token_count": null,
+                        "sent_at": "2025-10-21T18:36:56.000000Z",
+                        "created_at": "2025-10-21T18:36:56.000000Z",
+                        "updated_at": "2025-10-21T18:36:56.000000Z"
+                    },
+                    {
+                        "id": 6,
+                        "conversation_id": 12,
+                        "role": "assistant",
+                        "content": "أهلاً بك! يسعدني مساعدتك.\n\nفي متجرنا، نقدم مجموعة واسعة من منتجات العناية بالبشرة المصنوعة يدوياً. منتجاتنا الرئيسية تشمل:\n\n1.  **صابون اليدين والجسم:** لدينا تشكيلة متنوعة من الصابون الصلب والسائل بروائح ومكونات مختلفة، مناسبة لجميع أنواع البشرة.\n2.  **صابون الوجه:** صابون مصمم خصيصاً للعناية ببشرة الوجه، بما في ذلك خيارات للبشرة الدهنية، الجافة، والحساسة.\n3.  **الشامبو الصلب والبلسم الصلب:** بدائل صديقة للبيئة للشامبو والبلسم التقليدي، للعناية بالشعر.\n4.  **قنابل الاستحمام وأملاح الاستحمام:** لتجربة استحمام مريحة وممتعة مع زيوت عطرية ومكونات مغذية.\n5.  **زيوت الجسم واللوشن:** لترطيب وتغذية البشرة بعد الاستحمام.\n\nهل تبحث عن شيء محدد، أو لديك نوع بشرة معين في ذهنك؟ يمكنني أن أقدم لك تفاصيل أكثر عن أي فئة تهمك!",
+                        "metadata": {
+                            "recommended_products": [
+                                {
+                                    "id": 1,
+                                    "name": null,
+                                    "slug": "vitamin-c-face-moisturizer",
+                                    "price": "25.500",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": null,
+                                    "slug": "anti-aging-retinol-serum",
+                                    "price": "35.750",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": null,
+                                    "slug": "activated-charcoal-face-cleanser",
+                                    "price": "18.250",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                                }
+                            ]
+                        },
+                        "token_count": 318,
+                        "sent_at": "2025-10-21T18:37:02.000000Z",
+                        "created_at": "2025-10-21T18:37:02.000000Z",
+                        "updated_at": "2025-10-21T18:37:02.000000Z"
+                    }
+                ]
+            },
+            {
+                "id": 11,
+                "session_id": "2gZuZ9apbe17r7WzR6Q1XzEzTAn72xzj",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:35:54.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:35:54.000000Z",
+                "updated_at": "2025-10-21T18:35:54.000000Z",
+                "messages": []
+            },
+            {
+                "id": 10,
+                "session_id": "X2dyWE0YUmWuBX9JBSwSuR0ystHrWVnF",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:35:28.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:35:28.000000Z",
+                "updated_at": "2025-10-21T18:35:28.000000Z",
+                "messages": []
+            },
+            {
+                "id": 9,
+                "session_id": "ATU69EQROSehd2nKzKV65GXlBOPqNWRj",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:35:15.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:35:15.000000Z",
+                "updated_at": "2025-10-21T18:35:15.000000Z",
+                "messages": []
+            },
+            {
+                "id": 8,
+                "session_id": "IpPEbVZEvD9MRSxcZPEeqqtNymiXUqTi",
+                "user_ip": "127.0.0.1",
+                "user_agent": "curl\/8.7.1",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:33:04.000000Z",
+                "message_count": 3,
+                "created_at": "2025-10-21T18:30:52.000000Z",
+                "updated_at": "2025-10-21T18:33:04.000000Z",
+                "messages": [
+                    {
+                        "id": 2,
+                        "conversation_id": 8,
+                        "role": "user",
+                        "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                        "metadata": null,
+                        "token_count": null,
+                        "sent_at": "2025-10-21T18:31:04.000000Z",
+                        "created_at": "2025-10-21T18:31:04.000000Z",
+                        "updated_at": "2025-10-21T18:31:04.000000Z"
+                    },
+                    {
+                        "id": 3,
+                        "conversation_id": 8,
+                        "role": "user",
+                        "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                        "metadata": null,
+                        "token_count": null,
+                        "sent_at": "2025-10-21T18:32:50.000000Z",
+                        "created_at": "2025-10-21T18:32:50.000000Z",
+                        "updated_at": "2025-10-21T18:32:50.000000Z"
+                    },
+                    {
+                        "id": 4,
+                        "conversation_id": 8,
+                        "role": "assistant",
+                        "content": "أهلاً بك! يسعدني مساعدتك في اكتشاف منتجاتنا الرائعة.\n\nمتجرنا يقدم تشكيلة واسعة من منتجات الصابون والعناية بالجسم، منها:\n\n1.  **الصابون الصلب المصنوع يدويًا:** لدينا مجموعة كبيرة بأنواع ومكونات طبيعية مختلفة مثل:\n    *   **صابون زيت الزيتون:** لترطيب وتغذية البشرة.\n    *   **صابون حليب الماعز:** مثالي للبشرة الحساسة والجافة.\n    *   **صابون الشوفان والعسل:** لتهدئة وتقشير لطيف.\n    *   **صابون اللافندر، الورد، الحمضيات:** بروائح عطرية منعشة ومريحة.\n2.  **الصابون السائل:**\n    *   **صابون سائل لليدين:** بتركيبات مطهرة ومرطبة.\n    *   **غسول الجسم السائل:** لتنظيف وترطيب الجسم بالكامل.\n3.  **قنابل الاستحمام (Bath Bombs):** لتجربة استحمام فاخرة ومليئة بالفقاعات والروائح العطرية.\n4.  **مقشرات الجسم:** لتجديد البشرة وإزالة الخلايا الميتة، بتركيبات مثل السكر أو الملح.\n5.  **لوشن وكريمات الجسم:** لترطيب عميق وتغذية البشرة بعد الاستحمام.\n6.  **مجموعات الهدايا:** خيارات منسقة بعناية لتكون هدية مثالية.\n\nهل تبحث عن شيء معين؟ ربما لنوع بشرة محدد، رائحة مفضلة، أو منتج لاستخدام معين؟ أنا هنا لمساعدتك في العثور على ما يناسبك تمامًا!",
+                        "metadata": {
+                            "recommended_products": [
+                                {
+                                    "id": 1,
+                                    "name": null,
+                                    "slug": "vitamin-c-face-moisturizer",
+                                    "price": "25.500",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": null,
+                                    "slug": "anti-aging-retinol-serum",
+                                    "price": "35.750",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": null,
+                                    "slug": "activated-charcoal-face-cleanser",
+                                    "price": "18.250",
+                                    "image": null,
+                                    "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                                }
+                            ]
+                        },
+                        "token_count": 442,
+                        "sent_at": "2025-10-21T18:33:03.000000Z",
+                        "created_at": "2025-10-21T18:33:03.000000Z",
+                        "updated_at": "2025-10-21T18:33:03.000000Z"
+                    }
+                ]
+            },
+            {
+                "id": 7,
+                "session_id": "Beltn2pNHabEGdDXbZWT5OjiNUg1H9Li",
+                "user_ip": "127.0.0.1",
+                "user_agent": "curl\/8.7.1",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:29:19.000000Z",
+                "message_count": 1,
+                "created_at": "2025-10-21T18:27:58.000000Z",
+                "updated_at": "2025-10-21T18:29:19.000000Z",
+                "messages": [
+                    {
+                        "id": 1,
+                        "conversation_id": 7,
+                        "role": "user",
+                        "content": "مرحبا، أريد معرفة المنتجات المتاحة",
+                        "metadata": null,
+                        "token_count": null,
+                        "sent_at": "2025-10-21T18:29:18.000000Z",
+                        "created_at": "2025-10-21T18:29:18.000000Z",
+                        "updated_at": "2025-10-21T18:29:18.000000Z"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "session_id": "7J3oCAj6EAQF7nIhoDUdxJk4Zj2JPgl0",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:27:27.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:27:27.000000Z",
+                "updated_at": "2025-10-21T18:27:27.000000Z",
+                "messages": []
+            },
+            {
+                "id": 5,
+                "session_id": "1r2DbGWGKhgW4wrlvr7eXA3kdpzilhA7",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:26:37.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:26:37.000000Z",
+                "updated_at": "2025-10-21T18:26:37.000000Z",
+                "messages": []
+            },
+            {
+                "id": 4,
+                "session_id": "O5gs5VzV16Sspga2UPx7S0Jcs4DgMIzI",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:25:45.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:25:45.000000Z",
+                "updated_at": "2025-10-21T18:25:45.000000Z",
+                "messages": []
+            },
+            {
+                "id": 3,
+                "session_id": "aZZg521Ya2PRAgGnrmFRc3p3SpAavJqf",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:25:21.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:25:21.000000Z",
+                "updated_at": "2025-10-21T18:25:21.000000Z",
+                "messages": []
+            },
+            {
+                "id": 2,
+                "session_id": "GPMxim70KTXnqGHSEBczvg8ePmu29kTj",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "أنت مساعد ذكي لمتجر الصابون. ساعد العملاء في العثور على المنتجات المناسبة.",
+                    "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:23:19.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:23:19.000000Z",
+                "updated_at": "2025-10-21T18:23:19.000000Z",
+                "messages": []
+            },
+            {
+                "id": 1,
+                "session_id": "qhg09NGMQVsGRIMzPro1wxjS3nINpbke",
+                "user_ip": "127.0.0.1",
+                "user_agent": "",
+                "context_data": {
+                    "products": [
+                        {
+                            "id": 1,
+                            "name": null,
+                            "slug": "vitamin-c-face-moisturizer",
+                            "description": "كريم مرطب غني بفيتامين C يساعد على تجديد خلايا البشرة وإشراقها. مناسب لجميع أنواع البشرة ويوفر ترطيباً عميقاً لمدة 24 ساعة.",
+                            "price": "25.500",
+                            "category": "كريمات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/vitamin-c-face-moisturizer"
+                        },
+                        {
+                            "id": 2,
+                            "name": null,
+                            "slug": "anti-aging-retinol-serum",
+                            "description": "سيروم قوي بالريتينول يساعد على تقليل التجاعيد وتحسين ملمس البشرة. يحفز تجديد الخلايا ويوحد لون البشرة.",
+                            "price": "35.750",
+                            "category": "سيروم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/anti-aging-retinol-serum"
+                        },
+                        {
+                            "id": 3,
+                            "name": null,
+                            "slug": "activated-charcoal-face-cleanser",
+                            "description": "منظف عميق بالفحم النشط ينظف المسام بعمق ويزيل الشوائب والزيوت الزائدة. مثالي للبشرة الدهنية والمختلطة.",
+                            "price": "18.250",
+                            "category": "منظفات الوجه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/activated-charcoal-face-cleanser"
+                        },
+                        {
+                            "id": 4,
+                            "name": null,
+                            "slug": "shea-butter-body-cream",
+                            "description": "كريم جسم فاخر بزبدة الشيا الطبيعية يوفر ترطيباً مكثفاً للبشرة الجافة. تركيبة غنية تترك البشرة ناعمة ومرنة.",
+                            "price": "22.000",
+                            "category": "كريمات الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/shea-butter-body-cream"
+                        },
+                        {
+                            "id": 5,
+                            "name": null,
+                            "slug": "argan-rose-body-oil",
+                            "description": "زيت جسم طبيعي بخلاصة الأرغان والورد يغذي البشرة ويتركها ناعمة ومتألقة. رائحة عطرة تدوم طويلاً.",
+                            "price": "28.500",
+                            "category": "زيوت الجسم",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/argan-rose-body-oil"
+                        },
+                        {
+                            "id": 6,
+                            "name": null,
+                            "slug": "honey-lavender-natural-soap",
+                            "description": "صابون طبيعي مصنوع يدوياً بالعسل الطبيعي واللافندر المهدئ. ينظف البشرة بلطف ويتركها ناعمة ومعطرة.",
+                            "price": "12.750",
+                            "category": "صابون طبيعي",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/honey-lavender-natural-soap"
+                        },
+                        {
+                            "id": 7,
+                            "name": null,
+                            "slug": "jasmine-flower-womens-perfume",
+                            "description": "عطر أنثوي راقٍ بعبير زهرة الياسمين الطبيعية. تركيبة فاخرة تجمع بين النفحات الزهرية والخشبية لإطلالة مميزة.",
+                            "price": "45.000",
+                            "category": "عطور نسائية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/jasmine-flower-womens-perfume"
+                        },
+                        {
+                            "id": 8,
+                            "name": null,
+                            "slug": "royal-oud-mens-perfume",
+                            "description": "عطر رجالي فاخر بخلاصة العود الطبيعي. تركيبة قوية وثابتة تناسب الرجل الأنيق والواثق من نفسه.",
+                            "price": "55.000",
+                            "category": "عطور رجالية",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/royal-oud-mens-perfume"
+                        },
+                        {
+                            "id": 9,
+                            "name": null,
+                            "slug": "long-lasting-matte-lipstick",
+                            "description": "أحمر شفاه بتركيبة مات فاخرة يدوم طويلاً دون تشقق. متوفر بألوان عصرية تناسب جميع المناسبات.",
+                            "price": "15.500",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/long-lasting-matte-lipstick"
+                        },
+                        {
+                            "id": 10,
+                            "name": null,
+                            "slug": "natural-full-coverage-foundation",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/natural-full-coverage-foundation"
+                        },
+                        {
+                            "id": 11,
+                            "name": null,
+                            "slug": "yblbyl",
+                            "description": "يلليب",
+                            "price": "100.000",
+                            "category": "أحمر الشفاه",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/yblbyl"
+                        },
+                        {
+                            "id": 12,
+                            "name": null,
+                            "slug": "krym-asas-tbyaay-btghty-kaml-copy",
+                            "description": "كريم أساس بتركيبة طبيعية يوفر تغطية كاملة ومظهراً طبيعياً. مقاوم للماء ويدوم طوال اليوم.",
+                            "price": "32.000",
+                            "category": "كريم الأساس",
+                            "url": "https:\/\/soapy-bubbles.com\/product\/krym-asas-tbyaay-btghty-kaml-copy"
+                        }
+                    ],
+                    "system_prompt": "You are a helpful AI assistant for an e-commerce website. Help customers find products and answer their questions.",
+                    "welcome_message": "مرحباً! كيف يمكنني مساعدتك اليوم؟"
+                },
+                "status": "active",
+                "last_activity_at": "2025-10-21T18:22:45.000000Z",
+                "message_count": 0,
+                "created_at": "2025-10-21T18:22:45.000000Z",
+                "updated_at": "2025-10-21T18:22:45.000000Z",
+                "messages": []
+            }
+        ],
+        "first_page_url": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/conversations?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/conversations?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/conversations?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/conversations",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 15,
+        "total": 15
+    }
+}
+
+============================================================
+TEST: Get Available Products
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 9,
+                "title": "أحمر شفاه مات طويل الثبات",
+                "slug": "long-lasting-matte-lipstick",
+                "price": "15.500",
+                "is_available": true
+            },
+            {
+                "id": 5,
+                "title": "زيت الجسم بالأرغان والورد",
+                "slug": "argan-rose-body-oil",
+                "price": "28.500",
+                "is_available": true
+            },
+            {
+                "id": 2,
+                "title": "سيروم الريتينول المضاد للشيخوخة",
+                "slug": "anti-aging-retinol-serum",
+                "price": "35.750",
+                "is_available": true
+            },
+            {
+                "id": 6,
+                "title": "صابون طبيعي بالعسل واللافندر",
+                "slug": "honey-lavender-natural-soap",
+                "price": "12.750",
+                "is_available": true
+            },
+            {
+                "id": 8,
+                "title": "عطر العود الملكي الرجالي",
+                "slug": "royal-oud-mens-perfume",
+                "price": "55.000",
+                "is_available": true
+            },
+            {
+                "id": 7,
+                "title": "عطر زهرة الياسمين الأنثوي",
+                "slug": "jasmine-flower-womens-perfume",
+                "price": "45.000",
+                "is_available": true
+            },
+            {
+                "id": 10,
+                "title": "كريم أساس طبيعي بتغطية كاملة",
+                "slug": "natural-full-coverage-foundation",
+                "price": "32.000",
+                "is_available": true
+            },
+            {
+                "id": 4,
+                "title": "كريم الجسم بزبدة الشيا",
+                "slug": "shea-butter-body-cream",
+                "price": "22.000",
+                "is_available": true
+            },
+            {
+                "id": 1,
+                "title": "كريم مرطب للوجه بفيتامين C",
+                "slug": "vitamin-c-face-moisturizer",
+                "price": "25.500",
+                "is_available": true
+            },
+            {
+                "id": 3,
+                "title": "منظف الوجه بالفحم النشط",
+                "slug": "activated-charcoal-face-cleanser",
+                "price": "18.250",
+                "is_available": true
+            },
+            {
+                "id": 11,
+                "title": "يبلبيل",
+                "slug": "yblbyl",
+                "price": "100.000",
+                "is_available": true
+            }
+        ],
+        "first_page_url": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/products?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/products?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/products?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http:\/\/localhost:8000\/api\/v1\/admin\/chatbot\/products",
+        "per_page": 20,
+        "prev_page_url": null,
+        "to": 11,
+        "total": 11
+    }
+}
+
+============================================================
+TEST: Test Configuration
+------------------------------------------------------------
+✅ HTTP Code: 200 (Expected: 200)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "settings_valid": true,
+        "ai_connection": true,
+        "product_access": false,
+        "message": "Configuration test completed"
+    }
+}
+
+🚨 Testing Error Handling...
+
+============================================================
+TEST: Invalid Session ID
+------------------------------------------------------------
+❌ HTTP Code: 422 (Expected: 404)
+Response Data:
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "session_id": [
+            "The selected session id is invalid."
+        ]
+    }
+}
+
+============================================================
+TEST: Missing Required Fields
+------------------------------------------------------------
+❌ HTTP Code: 200 (Expected: 422)
+Response Data:
+{
+    "success": true,
+    "data": {
+        "conversation_id": 16,
+        "session_id": "J7mXdpVJ9veMvi0bj1aP3MbRbCbfdDMq",
+        "welcome_message": "مرحبا! كيف يمكنني مساعدتك اليوم؟",
+        "chatbot_name": "Chatbot Assistant"
+    }
+}
+
+============================================================
+TEST: Invalid Admin Settings
+------------------------------------------------------------
+✅ HTTP Code: 422 (Expected: 422)
+Response Data:
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "name": [
+            "The name field is required."
+        ],
+        "system_prompt": [
+            "The system prompt field is required."
+        ],
+        "welcome_message": [
+            "The welcome message field is required."
+        ],
+        "is_active": [
+            "The is active field must be true or false."
+        ],
+        "product_access_type": [
+            "The product access type field is required."
+        ],
+        "max_conversation_length": [
+            "The max conversation length field is required."
+        ],
+        "token_limit_per_message": [
+            "The token limit per message field is required."
+        ]
+    }
+}
+
+============================================================
+🏁 TEST SUMMARY
+============================================================
+❌ SOME TESTS FAILED. Please check the errors above.
+
+📝 Test completed at: 2025-10-21 18:39:30
+
+📚 API Endpoints Tested:
+Public APIs:
+  - GET  /api/v1/chat/settings
+  - POST /api/v1/chat/start
+  - POST /api/v1/chat/message
+  - GET  /api/v1/chat/history
+  - POST /api/v1/chat/end
+
+Admin APIs:
+  - GET  /api/v1/admin/chatbot/settings
+  - PUT  /api/v1/admin/chatbot/settings
+  - GET  /api/v1/admin/chatbot/statistics
+  - GET  /api/v1/admin/chatbot/conversations
+  - GET  /api/v1/admin/chatbot/products
+  - POST /api/v1/admin/chatbot/test
+
+🔧 Next Steps:
+1. If tests passed: The API is ready for frontend integration
+2. If tests failed: Check Laravel logs and fix any issues
+3. Configure Gemini API key in .env if not already done
+4. Test with real frontend integration
