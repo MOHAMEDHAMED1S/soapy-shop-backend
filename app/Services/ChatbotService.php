@@ -166,28 +166,24 @@ class ChatbotService
     {
         $messages = [];
         
-        // Add system prompt (only for first message or if conversation is short)
-        if ($conversation->message_count <= 2) {
-            $systemPrompt = $this->settings->system_prompt;
-            
-            // Add products context and recommendation instructions on first user turn
-            if (true) {
-                $productsJson = json_encode($conversation->context_data['products'], JSON_UNESCAPED_UNICODE);
-                $systemPrompt .= "\n\nمنتجات المتجر المتاحة:\n" . $productsJson;
-                $systemPrompt .= "\n\nتعليمات ترشيح المنتجات:";
-                $systemPrompt .= "\n- عندما يسأل المستخدم عن منتج معين أو يذكر احتياجاً، قم بترشيح المنتجات المناسبة من القائمة أعلاه";
-                $systemPrompt .= "\n- اختر من 1-3 منتجات فقط الأكثر صلة بطلب المستخدم";
-                $systemPrompt .= "\n- في نهاية ردك، أضف قسم 'المنتجات المرشحة:' واذكر أرقام المنتجات المرشحة فقط";
-                $systemPrompt .= "\n- مثال: 'المنتجات المرشحة: 5, 12, 8'";
-                $systemPrompt .= "\n- إذا لم تجد منتجات مناسبة، لا تذكر أي منتجات";
-                $systemPrompt .= "\n-اهم واخطر التعليمات هو انه لا يجب ابدا ترشيح اي منتج غير مرفق لك في قائمه المنتجات";
-            }
-            
-            $messages[] = [
-                'role' => 'system',
-                'content' => $systemPrompt
-            ];
-        }
+        // Add system prompt with products context for every message
+        $systemPrompt = $this->settings->system_prompt;
+        
+        // Add products context and recommendation instructions for every message
+        $productsJson = json_encode($conversation->context_data['products'], JSON_UNESCAPED_UNICODE);
+        $systemPrompt .= "\n\nمنتجات المتجر المتاحة:\n" . $productsJson;
+        $systemPrompt .= "\n\nتعليمات ترشيح المنتجات:";
+        $systemPrompt .= "\n- عندما يسأل المستخدم عن منتج معين أو يذكر احتياجاً، قم بترشيح المنتجات المناسبة من القائمة أعلاه";
+        $systemPrompt .= "\n- اختر من 1-3 منتجات فقط الأكثر صلة بطلب المستخدم";
+        $systemPrompt .= "\n- في نهاية ردك، أضف قسم 'المنتجات المرشحة:' واذكر أرقام المنتجات المرشحة فقط";
+        $systemPrompt .= "\n- مثال: 'المنتجات المرشحة: 5, 12, 8'";
+        $systemPrompt .= "\n- إذا لم تجد منتجات مناسبة، لا تذكر أي منتجات";
+        $systemPrompt .= "\n-اهم واخطر التعليمات هو انه لا يجب ابدا ترشيح اي منتج غير مرفق لك في قائمه المنتجات";
+        
+        $messages[] = [
+            'role' => 'system',
+            'content' => $systemPrompt
+        ];
 
         // Add conversation history (last 10 messages to save tokens)
         $recentMessages = $conversation->orderedMessages()
