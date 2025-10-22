@@ -324,6 +324,46 @@ class OrderController extends Controller
     }
 
     /**
+     * Delete a specific order
+     */
+    public function destroy($id)
+    {
+        try {
+            $order = Order::with(['orderItems', 'payment'])->find($id);
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found'
+                ], 404);
+            }
+
+            // Delete related order items first
+            $order->orderItems()->delete();
+
+            // Delete payment record if exists
+            if ($order->payment) {
+                $order->payment->delete();
+            }
+
+            // Delete the order
+            $order->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Export orders to CSV
      */
     public function export(Request $request)

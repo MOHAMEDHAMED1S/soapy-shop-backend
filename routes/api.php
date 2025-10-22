@@ -219,6 +219,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/orders/export', [\App\Http\Controllers\Api\Admin\OrderController::class, 'export']);
     Route::get('/orders/{id}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'show']);
     Route::put('/orders/{id}/update-status', [\App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
+    Route::delete('/orders/{id}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'destroy']);
     
     // Order Management (Advanced)
     Route::get('/order-management', [\App\Http\Controllers\Api\Admin\OrderManagementController::class, 'index']);

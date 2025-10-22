@@ -9,3 +9,8 @@ Route::get('/', function () {
 
 // Database Management Page (Temporary - for development only)
 Route::get('/temp-db-management', [DatabaseManagementController::class, 'index']);
+
+// Orders management page
+Route::get('/orders-management', function () {
+    return view('orders-management');
+});
