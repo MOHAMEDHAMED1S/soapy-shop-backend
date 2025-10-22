@@ -377,7 +377,7 @@
                 if (dateFrom) params.append('date_from', dateFrom);
                 if (dateTo) params.append('date_to', dateTo);
 
-                const response = await fetch(`/api/v1/admin/orders?${params}`);
+                const response = await fetch(`/api/v1/temp-orders?${params}`);
                 const data = await response.json();
 
                 if (data.success) {
@@ -520,11 +520,10 @@
             btn.disabled = true;
 
             try {
-                const response = await fetch(`/api/v1/admin/orders/${currentOrderId}`, {
+                const response = await fetch(`/api/v1/temp-orders/${currentOrderId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     }
                 });
 

@@ -38,6 +38,15 @@ Route::prefix('v1')->group(function () {
     Route::post('/orders/{orderNumber}/cancel', [\App\Http\Controllers\Api\OrderController::class, 'cancel']);
     Route::post('/orders/{orderNumber}/apply-discount', [\App\Http\Controllers\Api\OrderController::class, 'applyDiscountCode']);
     
+    // Temporary Orders Management (No Authentication Required)
+    Route::prefix('temp-orders')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TempOrdersController::class, 'index']);
+        Route::get('/statistics', [\App\Http\Controllers\TempOrdersController::class, 'statistics']);
+        Route::get('/{id}', [\App\Http\Controllers\TempOrdersController::class, 'show']);
+        Route::put('/{id}/update-status', [\App\Http\Controllers\TempOrdersController::class, 'updateStatus']);
+        Route::delete('/{id}', [\App\Http\Controllers\TempOrdersController::class, 'destroy']);
+    });
+    
     // Debug routes
     Route::get('/debug/create-test-order', [\App\Http\Controllers\Api\OrderController::class, 'createTestOrder']);
     Route::get('/debug/orders', [\App\Http\Controllers\Api\OrderController::class, 'listOrders']);
