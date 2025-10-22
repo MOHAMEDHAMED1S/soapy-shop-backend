@@ -289,11 +289,11 @@ class ChatbotService
                     $products[] = [
                         'id' => $product->id,
                         'name' => $product->title,
-                        'slug' => $product->slug ?? str_replace(' ', '-', strtolower($product->title)),
+                        'slug' => $product->slug,
                         'price' => $product->price,
                         'currency' => $product->currency ?? 'ر.س',
                         'image' => $product->images[0] ?? null,
-                        'url' => "https://soapy-bubbles.com/product/" . ($product->slug ?? str_replace(' ', '-', strtolower($product->title))),
+                        'url' => "https://soapy-bubbles.com/product/" . $product->slug,
                     ];
                 }
             }
@@ -363,7 +363,7 @@ class ChatbotService
     {
         return Product::where('id', $productId)
             ->where('is_available', true)
-            ->select('id', 'title', 'description', 'price', 'currency', 'images')
+            ->select('id', 'title', 'slug', 'description', 'price', 'currency', 'images')
             ->first();
     }
 
