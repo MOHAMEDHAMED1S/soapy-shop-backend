@@ -77,6 +77,20 @@ class PaymentService
                 $itemsTotal += (float)$order->shipping_amount;
             }
 
+            // Add discount as a negative item if there's a discount
+            if ($order->discount_amount > 0) {
+                $invoiceItems[] = [
+                    'ItemName' => 'خصم - ' . ($order->discount_code ?? 'كود الخصم'),
+                    'Quantity' => 1,
+                    'UnitPrice' => -(float)$order->discount_amount, // Negative value for discount
+                    'Weight' => 0,
+                    'Width' => 0,
+                    'Height' => 0,
+                    'Depth' => 0
+                ];
+                $itemsTotal -= (float)$order->discount_amount;
+            }
+
             // Now create the actual payment using SendPayment API
             $paymentData = [
                 'PaymentMethodId' => $selectedMethod['PaymentMethodId'],
@@ -85,7 +99,7 @@ class PaymentService
                 'CustomerMobile' => substr(preg_replace('/[^0-9]/', '', $order->customer_phone), -11), // Clean phone number
                 'CustomerReference' => $order->order_number,
                 'UserDefinedField' => $order->id,
-                'InvoiceValue' => $itemsTotal, // Use calculated total from items
+                'InvoiceValue' => (float)$order->total_amount, // Use the order's final total_amount which includes discount
                 'DisplayCurrencyIso' => $order->currency,
                 'CallBackUrl' => url('/api/v1/payments/success'),
                 'ErrorUrl' => url('/api/v1/payments/failure'),
