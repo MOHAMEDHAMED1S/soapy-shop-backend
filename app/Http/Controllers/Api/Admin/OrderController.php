@@ -105,6 +105,9 @@ class OrderController extends Controller
             }
 
             // Calculate filtered statistics
+            // Statuses that represent completed/paid orders for revenue calculation
+            $revenueStatuses = ['paid', 'shipped', 'delivered'];
+            
             $summary = [
                 'total_orders' => $filteredStatsQuery->count(),
                 'pending_orders' => (clone $baseStatsQuery)->where('status', 'pending')->count(),
@@ -113,8 +116,8 @@ class OrderController extends Controller
                 'delivered_orders' => (clone $baseStatsQuery)->where('status', 'delivered')->count(),
                 'cancelled_orders' => (clone $baseStatsQuery)->where('status', 'cancelled')->count(),
                 'awaiting_payment_orders' => (clone $baseStatsQuery)->where('status', 'awaiting_payment')->count(),
-                'total_revenue' => (clone $baseStatsQuery)->where('status', 'paid')->sum('total_amount'),
-                'average_order_value' => (clone $baseStatsQuery)->where('status', 'paid')->avg('total_amount'),
+                'total_revenue' => (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->sum('total_amount'),
+                'average_order_value' => (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->avg('total_amount'),
                 'filters_applied' => [
                     'status' => $request->status ?? null,
                     'date_from' => $request->date_from ?? null,

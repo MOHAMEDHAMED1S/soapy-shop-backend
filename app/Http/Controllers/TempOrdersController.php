@@ -196,15 +196,18 @@ class TempOrdersController extends Controller
             // Base query for date filtering
             $baseQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
 
+            // Statuses that represent completed/paid orders for revenue calculation
+            $revenueStatuses = ['paid', 'shipped', 'delivered'];
+
             $stats = [
                 'total_orders' => (clone $baseQuery)->count(),
-                'total_revenue' => (clone $baseQuery)->where('status', 'paid')->sum('total_amount'),
+                'total_revenue' => (clone $baseQuery)->whereIn('status', $revenueStatuses)->sum('total_amount'),
                 'pending_orders' => (clone $baseQuery)->where('status', 'pending')->count(),
                 'paid_orders' => (clone $baseQuery)->where('status', 'paid')->count(),
                 'shipped_orders' => (clone $baseQuery)->where('status', 'shipped')->count(),
                 'delivered_orders' => (clone $baseQuery)->where('status', 'delivered')->count(),
                 'cancelled_orders' => (clone $baseQuery)->where('status', 'cancelled')->count(),
-                'average_order_value' => (clone $baseQuery)->where('status', 'paid')->avg('total_amount'),
+                'average_order_value' => (clone $baseQuery)->whereIn('status', $revenueStatuses)->avg('total_amount'),
                 'orders_by_status' => (clone $baseQuery)->selectRaw('status, COUNT(*) as count')
                     ->groupBy('status')
                     ->get()
