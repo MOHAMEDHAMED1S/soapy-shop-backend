@@ -264,7 +264,6 @@ class OrderController extends Controller
             // Handle date filtering
             $dateFrom = $request->get('date_from') ?: $request->get('start_date');
             $dateTo = $request->get('date_to') ?: $request->get('end_date');
-            $status = $request->get('status');
             
             // Default to last 30 days if no dates provided
             if (!$dateFrom && !$dateTo) {
@@ -278,11 +277,6 @@ class OrderController extends Controller
 
             // Base query for date filtering
             $baseQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
-            
-            // Apply status filter if provided
-            if ($status) {
-                $baseQuery->where('status', $status);
-            }
 
             $stats = [
                 'total_orders' => (clone $baseQuery)->count(),
@@ -302,7 +296,6 @@ class OrderController extends Controller
                     ->limit(10)
                     ->get(),
                 'filters_applied' => [
-                    'status' => $status,
                     'date_from' => $dateFrom,
                     'date_to' => $dateTo,
                     'start_date' => $request->get('start_date'),
