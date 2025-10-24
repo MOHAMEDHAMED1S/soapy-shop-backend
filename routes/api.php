@@ -371,6 +371,25 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/discount-codes/{id}/usage-history', [\App\Http\Controllers\Api\Admin\DiscountCodeController::class, 'usageHistory']);
     Route::post('/discount-codes/{id}/duplicate', [\App\Http\Controllers\Api\Admin\DiscountCodeController::class, 'duplicate']);
 
+    // Product Discounts Management
+    Route::get('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'index']);
+    Route::post('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'store']);
+    Route::get('/product-discounts/statistics', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'statistics']);
+    Route::get('/product-discounts/{id}', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'show']);
+    Route::put('/product-discounts/{id}', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'update']);
+    Route::delete('/product-discounts/{id}', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'destroy']);
+    Route::put('/product-discounts/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'toggleStatus']);
+    Route::get('/product-discounts/{id}/affected-products', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'affectedProducts']);
+    Route::post('/product-discounts/{id}/duplicate', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'duplicate']);
+    
+    // OPTIONS routes for product discounts
+    Route::options('/product-discounts', function () { return response('', 204); });
+    Route::options('/product-discounts/statistics', function () { return response('', 204); });
+    Route::options('/product-discounts/{id}', function () { return response('', 204); });
+    Route::options('/product-discounts/{id}/toggle-status', function () { return response('', 204); });
+    Route::options('/product-discounts/{id}/affected-products', function () { return response('', 204); });
+    Route::options('/product-discounts/{id}/duplicate', function () { return response('', 204); });
+
     // Payment Methods Management
     Route::get('/payment-methods', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'index']);
     Route::put('/payment-methods/{code}/toggle', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'toggle']);

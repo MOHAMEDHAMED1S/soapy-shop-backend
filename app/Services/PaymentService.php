@@ -91,6 +91,9 @@ class PaymentService
                 $itemsTotal -= (float)$order->discount_amount;
             }
 
+            // Round to 3 decimal places to match MyFatoorah requirements
+            $itemsTotal = round($itemsTotal, 3);
+
             // Now create the actual payment using SendPayment API
             $paymentData = [
                 'PaymentMethodId' => $selectedMethod['PaymentMethodId'],
@@ -99,7 +102,7 @@ class PaymentService
                 'CustomerMobile' => substr(preg_replace('/[^0-9]/', '', $order->customer_phone), -11), // Clean phone number
                 'CustomerReference' => $order->order_number,
                 'UserDefinedField' => $order->id,
-                'InvoiceValue' => (float)$order->total_amount, // Use the order's final total_amount which includes discount
+                'InvoiceValue' => $itemsTotal, // Use calculated itemsTotal to match InvoiceItems
                 'DisplayCurrencyIso' => $order->currency,
                 'CallBackUrl' => url('/api/v1/payments/success'),
                 'ErrorUrl' => url('/api/v1/payments/failure'),

@@ -74,20 +74,25 @@ class OrderController extends Controller
                     ], 400);
                 }
 
-                $itemTotal = $product->price * $item['quantity'];
+                // Use discounted_price if available, otherwise use regular price
+                $finalPrice = $product->discounted_price ?? $product->price;
+                $itemTotal = $finalPrice * $item['quantity'];
                 $subtotalAmount += $itemTotal;
 
                 // Create product snapshot for order history
                 $productSnapshots[] = [
                     'product_id' => $product->id,
-                    'product_price' => $product->price,
+                    'product_price' => $finalPrice, // Use final price (after product discount)
                     'quantity' => $item['quantity'],
                     'product_snapshot' => [
                         'title' => $product->title,
                         'slug' => $product->slug,
                         'description' => $product->description,
                         'short_description' => $product->short_description,
-                        'price' => $product->price,
+                        'price' => $product->price, // Original price for reference
+                        'discounted_price' => $finalPrice, // Final price after discount
+                        'has_discount' => $product->has_discount,
+                        'discount_percentage' => $product->discount_percentage,
                         'currency' => $product->currency,
                         'images' => $product->images,
                         'meta' => $product->meta,
@@ -164,7 +169,7 @@ class OrderController extends Controller
                 'subtotal_amount' => $subtotalAmount,
                 'shipping_amount' => $shippingAmount,
                 'free_shipping' => $freeShipping,
-                'tracking_number' => $trackingNumber,
+                'tracking_number' => $orderNumber,
             ]);
 
             // Create order items
@@ -302,13 +307,16 @@ class OrderController extends Controller
                     ], 400);
                 }
 
-                $itemTotal = $product->price * $item['quantity'];
+                // Use discounted_price if available, otherwise use regular price
+                $finalPrice = $product->discounted_price ?? $product->price;
+                $itemTotal = $finalPrice * $item['quantity'];
                 $subtotalAmount += $itemTotal;
 
                 $items[] = [
                     'product' => $product,
                     'quantity' => $item['quantity'],
                     'item_total' => $itemTotal,
+                    'price_used' => $finalPrice,
                 ];
             }
 
@@ -418,13 +426,16 @@ class OrderController extends Controller
                     ], 400);
                 }
 
-                $itemTotal = $product->price * $item['quantity'];
+                // Use discounted_price if available, otherwise use regular price
+                $finalPrice = $product->discounted_price ?? $product->price;
+                $itemTotal = $finalPrice * $item['quantity'];
                 $subtotalAmount += $itemTotal;
 
                 $items[] = [
                     'product' => $product,
                     'quantity' => $item['quantity'],
                     'item_total' => $itemTotal,
+                    'price_used' => $finalPrice,
                 ];
             }
 
