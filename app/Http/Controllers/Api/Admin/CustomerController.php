@@ -23,7 +23,11 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Customer::with(['latestOrder']);
+            // Add order counts and totals to the query
+            $query = Customer::with(['latestOrder'])
+                ->withCount('orders as total_orders')
+                ->withSum('orders as calculated_total_spent', 'total_amount')
+                ->withAvg('orders as calculated_average_order_value', 'total_amount');
 
             // Apply filters
             if ($request->has('search')) {
@@ -77,14 +81,29 @@ class CustomerController extends Controller
             $perPage = $request->get('per_page', 15);
             $customers = $query->paginate($perPage);
 
-            // Add summary statistics
+            // Transform the customer data to include calculated values
+            $customers->getCollection()->transform(function ($customer) {
+                // Use calculated values if available, otherwise fall back to stored values
+                $customer->total_orders = $customer->total_orders ?? 0;
+                $customer->total_spent = $customer->calculated_total_spent ?? $customer->total_spent ?? 0;
+                $customer->average_order_value = $customer->calculated_average_order_value ?? $customer->average_order_value ?? 0;
+                
+                // Clean up temporary calculated fields
+                unset($customer->calculated_total_spent);
+                unset($customer->calculated_average_order_value);
+                
+                return $customer;
+            });
+
+            // Add summary statistics with proper revenue calculation
+            $revenueStatuses = ['paid', 'shipped', 'delivered'];
             $summary = [
                 'total_customers' => Customer::count(),
                 'active_customers' => Customer::active()->count(),
                 'vip_customers' => Customer::vip()->count(),
                 'new_customers' => Customer::new()->count(),
-                'total_revenue' => Customer::sum('total_spent'),
-                'average_order_value' => Customer::avg('average_order_value'),
+                'total_revenue' => \App\Models\Order::whereIn('status', $revenueStatuses)->sum('total_amount'),
+                'average_customer_value' => Customer::withSum('orders', 'total_amount')->get()->avg('orders_sum_total_amount') ?? 0,
             ];
 
             return response()->json([

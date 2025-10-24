@@ -201,19 +201,27 @@ class CustomerService
     public function getCustomerDetails(int $customerId): ?array
     {
         $customer = Customer::with(['orders.orderItems.product', 'latestOrder'])
+            ->withCount('orders as calculated_total_orders')
+            ->withSum('orders as calculated_total_spent', 'total_amount')
+            ->withAvg('orders as calculated_average_order_value', 'total_amount')
             ->find($customerId);
 
         if (!$customer) {
             return null;
         }
 
+        // Use calculated values (dynamic from database) with fallback to stored values
+        $totalOrders = $customer->calculated_total_orders ?? $customer->total_orders ?? 0;
+        $totalSpent = $customer->calculated_total_spent ?? $customer->total_spent ?? 0;
+        $averageOrderValue = $customer->calculated_average_order_value ?? $customer->average_order_value ?? 0;
+
         return [
             'customer' => $customer,
             'order_history' => $customer->orders()->orderBy('created_at', 'desc')->get(),
             'statistics' => [
-                'total_orders' => $customer->total_orders,
-                'total_spent' => $customer->total_spent,
-                'average_order_value' => $customer->average_order_value,
+                'total_orders' => $totalOrders,
+                'total_spent' => $totalSpent,
+                'average_order_value' => $averageOrderValue,
                 'last_order_date' => $customer->last_order_at,
                 'customer_since' => $customer->created_at,
                 'is_vip' => $customer->isVip(),
@@ -235,9 +243,24 @@ class CustomerService
               ->orWhere('email', 'like', '%' . $query . '%');
         })
         ->with(['latestOrder'])
+        ->withCount('orders as total_orders')
+        ->withSum('orders as calculated_total_spent', 'total_amount')
+        ->withAvg('orders as calculated_average_order_value', 'total_amount')
         ->orderBy('total_spent', 'desc')
         ->limit($limit)
-        ->get();
+        ->get()
+        ->map(function ($customer) {
+            // Use calculated values with fallback
+            $customer->total_orders = $customer->total_orders ?? 0;
+            $customer->total_spent = $customer->calculated_total_spent ?? $customer->total_spent ?? 0;
+            $customer->average_order_value = $customer->calculated_average_order_value ?? $customer->average_order_value ?? 0;
+            
+            // Clean up temporary calculated fields
+            unset($customer->calculated_total_spent);
+            unset($customer->calculated_average_order_value);
+            
+            return $customer;
+        });
 
         return $customers->toArray();
     }
