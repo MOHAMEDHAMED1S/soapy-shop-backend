@@ -275,27 +275,41 @@ class OrderController extends Controller
                 $endDate = $dateTo ? Carbon::parse($dateTo)->endOfDay() : now();
             }
 
-            // Base query for date filtering
+            // Base query for date filtering only (without status filter)
             $baseQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
 
+            // Get status filter if provided
+            $statusFilter = $request->get('status');
+
+            // Statuses that represent completed/paid orders for revenue calculation
+            $revenueStatuses = ['paid', 'shipped', 'delivered'];
+
+            // Filtered query for total_orders (includes status filter if provided)
+            $filteredQuery = clone $baseQuery;
+            if ($statusFilter) {
+                $filteredQuery->where('status', $statusFilter);
+            }
+
             $stats = [
-                'total_orders' => (clone $baseQuery)->count(),
-                'total_revenue' => (clone $baseQuery)->where('status', 'paid')->sum('total_amount'),
+                'total_orders' => $filteredQuery->count(),
+                'total_revenue' => (clone $baseQuery)->whereIn('status', $revenueStatuses)->sum('total_amount'),
                 'pending_orders' => (clone $baseQuery)->where('status', 'pending')->count(),
                 'paid_orders' => (clone $baseQuery)->where('status', 'paid')->count(),
                 'shipped_orders' => (clone $baseQuery)->where('status', 'shipped')->count(),
                 'delivered_orders' => (clone $baseQuery)->where('status', 'delivered')->count(),
                 'cancelled_orders' => (clone $baseQuery)->where('status', 'cancelled')->count(),
-                'average_order_value' => (clone $baseQuery)->where('status', 'paid')->avg('total_amount'),
+                'awaiting_payment_orders' => (clone $baseQuery)->where('status', 'awaiting_payment')->count(),
+                'average_order_value' => (clone $baseQuery)->whereIn('status', $revenueStatuses)->avg('total_amount'),
                 'orders_by_status' => (clone $baseQuery)->selectRaw('status, COUNT(*) as count')
                     ->groupBy('status')
                     ->get()
                     ->pluck('count', 'status'),
-                'recent_orders' => (clone $baseQuery)->with(['orderItems.product'])
+                'recent_orders' => (clone $filteredQuery)->with(['orderItems.product'])
                     ->orderBy('created_at', 'desc')
                     ->limit(10)
                     ->get(),
                 'filters_applied' => [
+                    'status' => $statusFilter,
                     'date_from' => $dateFrom,
                     'date_to' => $dateTo,
                     'start_date' => $request->get('start_date'),
