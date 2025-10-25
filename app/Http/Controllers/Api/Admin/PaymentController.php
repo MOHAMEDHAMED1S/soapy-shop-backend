@@ -328,4 +328,119 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Verify pending payments with MyFatoorah
+     * Check all orders with status 'awaiting_payment' and verify if they were actually paid
+     * Returns list of orders that are paid but still marked as awaiting_payment
+     */
+    public function verifyPendingPayments(Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Log::info('Starting verification of pending payments');
+
+            // Get all orders with awaiting_payment status that have a payment record
+            $pendingOrders = \App\Models\Order::where('status', 'awaiting_payment')
+                ->with(['payment', 'orderItems.product'])
+                ->whereHas('payment', function($query) {
+                    $query->whereNotNull('invoice_reference');
+                })
+                ->get();
+
+            \Illuminate\Support\Facades\Log::info('Found ' . $pendingOrders->count() . ' orders with awaiting_payment status');
+
+            $paidButNotUpdated = [];
+            $stillPending = [];
+            $errors = [];
+            $processed = 0;
+
+            foreach ($pendingOrders as $order) {
+                $processed++;
+                
+                try {
+                    $invoiceReference = $order->payment->invoice_reference;
+                    
+                    \Illuminate\Support\Facades\Log::info("Checking order #{$order->id} - Invoice: {$invoiceReference}");
+
+                    // Verify payment status with MyFatoorah
+                    $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
+
+                    if ($paymentStatus['success']) {
+                        $invoiceData = $paymentStatus['data'];
+                        $status = $invoiceData['InvoiceStatus'] ?? 'unknown';
+
+                        if ($status === 'Paid') {
+                            // This order was paid but not updated!
+                            $paidButNotUpdated[] = [
+                                'order_id' => $order->id,
+                                'order_number' => $order->order_number,
+                                'customer_name' => $order->customer_name,
+                                'customer_phone' => $order->customer_phone,
+                                'total_amount' => $order->total_amount,
+                                'currency' => $order->currency,
+                                'invoice_reference' => $invoiceReference,
+                                'invoice_status' => $status,
+                                'order_created_at' => $order->created_at->toDateTimeString(),
+                                'payment_date' => $invoiceData['CreatedDate'] ?? null,
+                                'items_count' => $order->orderItems->count(),
+                            ];
+                        } else {
+                            $stillPending[] = [
+                                'order_id' => $order->id,
+                                'order_number' => $order->order_number,
+                                'invoice_status' => $status,
+                                'invoice_reference' => $invoiceReference,
+                            ];
+                        }
+                    } else {
+                        $errors[] = [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'invoice_reference' => $invoiceReference,
+                            'error' => $paymentStatus['error'] ?? 'Unknown error'
+                        ];
+                    }
+
+                } catch (\Exception $e) {
+                    $errors[] = [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            \Illuminate\Support\Facades\Log::info("Verification complete. Found {count} paid orders not updated", [
+                'count' => count($paidButNotUpdated)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'summary' => [
+                        'total_checked' => $processed,
+                        'paid_but_not_updated' => count($paidButNotUpdated),
+                        'still_pending' => count($stillPending),
+                        'errors' => count($errors),
+                    ],
+                    'paid_but_not_updated' => $paidButNotUpdated,
+                    'still_pending' => $stillPending,
+                    'errors' => $errors,
+                ],
+                'message' => 'Payment verification completed successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in verifyPendingPayments', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error verifying pending payments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
