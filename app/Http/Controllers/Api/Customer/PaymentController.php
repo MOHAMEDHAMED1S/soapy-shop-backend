@@ -401,21 +401,37 @@ class PaymentController extends Controller
                 // Deduct inventory for order items
                 $order->load('orderItems.product');
                 $order->deductInventory();
-                
-                // Create order notification using NotificationService
-                $this->notificationService->createOrderNotification($order, 'order_paid');
             } elseif ($invoiceStatus === 'Failed') {
                 $order->update(['status' => 'pending']);
             }
 
             DB::commit();
+            
+            // Send notification after commit (don't let email failure stop the process)
+            if ($invoiceStatus === 'Paid') {
+                try {
+                    $this->notificationService->createOrderNotification($order, 'order_paid');
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send order notification email', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue execution - don't fail the callback because of email
+                }
+            }
 
             // Redirect to frontend success page
             return redirect()->away(config('app.frontend_url') . '/payment/success?order=' . $order->order_number . '&status=' . $invoiceStatus);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Payment success callback error: ' . $e->getMessage());
+            Log::error('Payment success callback error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'order_id' => $request->get('order_id')
+            ]);
             return redirect()->away(config('app.frontend_url') . '/payment/failure?error=processing_error');
         }
     }
