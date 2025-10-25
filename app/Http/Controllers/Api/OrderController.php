@@ -224,31 +224,20 @@ class OrderController extends Controller
     }
 
     /**
-     * Get order details by order number and phone verification
+     * Get order details by order number (no phone verification required)
      */
     public function show(Request $request, string $orderNumber)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'phone' => 'required|string'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Phone number is required for order verification'
-                ], 422);
-            }
-
+            // Phone verification is now optional
             $order = Order::where('order_number', $orderNumber)
-                ->where('customer_phone', $request->phone)
                 ->with(['orderItems.product', 'payment'])
                 ->first();
 
             if (!$order) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Order not found or phone number does not match'
+                    'message' => 'Order not found'
                 ], 404);
             }
 

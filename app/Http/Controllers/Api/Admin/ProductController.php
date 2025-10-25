@@ -76,6 +76,9 @@ class ProductController extends Controller
                 'price' => 'required|numeric|min:0',
                 'currency' => 'nullable|string|max:3',
                 'is_available' => 'boolean',
+                'has_inventory' => 'boolean',
+                'stock_quantity' => 'nullable|integer|min:0|required_if:has_inventory,true',
+                'low_stock_threshold' => 'nullable|integer|min:0',
                 'category_id' => 'required|exists:categories,id',
                 'images' => 'required|array|min:1',
                 'images.*' => 'string', // URLs or base64 strings
@@ -110,10 +113,28 @@ class ProductController extends Controller
                 'price' => $request->price,
                 'currency' => $request->currency ?? 'KWD',
                 'is_available' => $request->boolean('is_available', true),
+                'has_inventory' => $request->boolean('has_inventory', false),
+                'stock_quantity' => $request->has_inventory ? $request->stock_quantity : null,
+                'low_stock_threshold' => $request->low_stock_threshold ?? 10,
+                'stock_last_updated_at' => $request->has_inventory ? now() : null,
                 'category_id' => $request->category_id,
                 'images' => $request->images,
                 'meta' => $request->meta ?? [],
             ]);
+
+            // Create initial inventory transaction if has inventory
+            if ($product->has_inventory && $product->stock_quantity > 0) {
+                \App\Models\InventoryTransaction::create([
+                    'product_id' => $product->id,
+                    'type' => 'increase',
+                    'quantity' => $product->stock_quantity,
+                    'quantity_before' => 0,
+                    'quantity_after' => $product->stock_quantity,
+                    'reason' => 'initial_stock',
+                    'notes' => 'Initial stock when product was created',
+                    'user_id' => auth()->id(),
+                ]);
+            }
 
             $product->load('category');
 
@@ -187,6 +208,9 @@ class ProductController extends Controller
                 'price' => 'sometimes|required|numeric|min:0',
                 'currency' => 'nullable|string|max:3',
                 'is_available' => 'boolean',
+                'has_inventory' => 'boolean',
+                'stock_quantity' => 'nullable|integer|min:0',
+                'low_stock_threshold' => 'nullable|integer|min:0',
                 'category_id' => 'sometimes|required|exists:categories,id',
                 'images' => 'sometimes|required|array|min:1',
                 'images.*' => 'string',
@@ -220,6 +244,49 @@ class ProductController extends Controller
                 }
                 
                 $updateData['slug'] = $slug;
+            }
+
+            // Handle inventory changes
+            if ($request->has('has_inventory')) {
+                $updateData['has_inventory'] = $request->boolean('has_inventory');
+                
+                // If enabling inventory tracking
+                if ($request->boolean('has_inventory') && !$product->has_inventory) {
+                    $updateData['stock_quantity'] = $request->stock_quantity ?? 0;
+                    $updateData['stock_last_updated_at'] = now();
+                    
+                    // Create initial inventory transaction
+                    if ($updateData['stock_quantity'] > 0) {
+                        \App\Models\InventoryTransaction::create([
+                            'product_id' => $product->id,
+                            'type' => 'increase',
+                            'quantity' => $updateData['stock_quantity'],
+                            'quantity_before' => 0,
+                            'quantity_after' => $updateData['stock_quantity'],
+                            'reason' => 'initial_stock',
+                            'notes' => 'Inventory tracking enabled for product',
+                            'user_id' => auth()->id(),
+                        ]);
+                    }
+                }
+                // If disabling inventory tracking
+                elseif (!$request->boolean('has_inventory') && $product->has_inventory) {
+                    $updateData['stock_quantity'] = null;
+                    $updateData['stock_last_updated_at'] = null;
+                }
+                // If updating stock quantity for product with inventory
+                elseif ($request->boolean('has_inventory') && $product->has_inventory && $request->has('stock_quantity')) {
+                    $oldQuantity = $product->stock_quantity ?? 0;
+                    $newQuantity = $request->stock_quantity;
+                    
+                    if ($oldQuantity != $newQuantity) {
+                        $product->setStock($newQuantity, auth()->id(), 'Stock updated via product edit');
+                    }
+                }
+            }
+
+            if ($request->has('low_stock_threshold')) {
+                $updateData['low_stock_threshold'] = $request->low_stock_threshold;
             }
 
             $product->update($updateData);

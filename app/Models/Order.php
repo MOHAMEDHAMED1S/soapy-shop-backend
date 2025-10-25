@@ -95,4 +95,69 @@ class Order extends Model
 
         return $orderNumber;
     }
+
+    /**
+     * Deduct inventory for all order items.
+     * Only deducts if product has inventory tracking enabled.
+     */
+    public function deductInventory(): array
+    {
+        $results = [
+            'success' => true,
+            'deducted' => [],
+            'skipped' => [],
+            'errors' => []
+        ];
+
+        foreach ($this->orderItems as $orderItem) {
+            $product = $orderItem->product;
+
+            // Skip if product doesn't exist
+            if (!$product) {
+                $results['errors'][] = [
+                    'order_item_id' => $orderItem->id,
+                    'error' => 'Product not found'
+                ];
+                continue;
+            }
+
+            // Skip if product doesn't track inventory
+            if (!$product->has_inventory) {
+                $results['skipped'][] = [
+                    'product_id' => $product->id,
+                    'product_title' => $product->title,
+                    'reason' => 'Product does not track inventory'
+                ];
+                continue;
+            }
+
+            // Attempt to deduct inventory
+            $deducted = $product->decreaseStock(
+                $orderItem->quantity,
+                $this->id,
+                null,
+                "Deducted for order #{$this->order_number}"
+            );
+
+            if ($deducted) {
+                $results['deducted'][] = [
+                    'product_id' => $product->id,
+                    'product_title' => $product->title,
+                    'quantity' => $orderItem->quantity,
+                    'remaining_stock' => $product->stock_quantity
+                ];
+            } else {
+                $results['success'] = false;
+                $results['errors'][] = [
+                    'product_id' => $product->id,
+                    'product_title' => $product->title,
+                    'quantity_requested' => $orderItem->quantity,
+                    'current_stock' => $product->stock_quantity,
+                    'error' => 'Insufficient stock'
+                ];
+            }
+        }
+
+        return $results;
+    }
 }

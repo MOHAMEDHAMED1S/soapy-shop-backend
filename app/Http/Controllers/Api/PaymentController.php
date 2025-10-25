@@ -169,6 +169,10 @@ class PaymentController extends Controller
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
                 
+                // Deduct inventory for order items
+                $order->load('orderItems.product');
+                $order->deductInventory();
+                
                 // Fire OrderPaid event to notify admins
                 event(new \App\Events\OrderPaid($order));
 
@@ -271,6 +275,10 @@ class PaymentController extends Controller
             $order = $payment->order;
             if ($data['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
+                
+                // Deduct inventory for order items
+                $order->load('orderItems.product');
+                $order->deductInventory();
                 
                 // Fire OrderPaid event to notify admins
                 event(new \App\Events\OrderPaid($order));

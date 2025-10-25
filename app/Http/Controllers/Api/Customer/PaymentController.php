@@ -255,6 +255,10 @@ class PaymentController extends Controller
             // Update order status based on payment status
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
+                
+                // Deduct inventory for order items
+                $order->load('orderItems.product');
+                $order->deductInventory();
             } elseif ($paymentStatus['data']['InvoiceStatus'] === 'Failed') {
                 $order->update(['status' => 'pending']);
             }
@@ -434,6 +438,10 @@ class PaymentController extends Controller
             // Update order status based on payment status
             if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
                 $order->update(['status' => 'paid']);
+                
+                // Deduct inventory for order items
+                $order->load('orderItems.product');
+                $order->deductInventory();
                 
                 // Create order notification using NotificationService
                 $this->notificationService->createOrderNotification($order, 'order_paid');

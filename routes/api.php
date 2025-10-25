@@ -267,6 +267,22 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::post('/products/{id}/duplicate', [\App\Http\Controllers\Api\Admin\ProductController::class, 'duplicate']);
     Route::put('/products/{id}/images', [\App\Http\Controllers\Api\Admin\ProductController::class, 'updateImages']);
     
+    // Inventory Management
+    Route::get('/inventory/statistics', [\App\Http\Controllers\Api\Admin\InventoryController::class, 'statistics']);
+    Route::get('/inventory/products', [\App\Http\Controllers\Api\Admin\InventoryController::class, 'products']);
+    Route::get('/inventory/transactions', [\App\Http\Controllers\Api\Admin\InventoryController::class, 'allTransactions']);
+    Route::get('/inventory/products/{productId}/transactions', [\App\Http\Controllers\Api\Admin\InventoryController::class, 'productTransactions']);
+    Route::post('/inventory/products/{productId}/adjust', [\App\Http\Controllers\Api\Admin\InventoryController::class, 'adjustInventory']);
+    Route::post('/inventory/bulk-import', [\App\Http\Controllers\Api\Admin\InventoryController::class, 'bulkImport']);
+    
+    // OPTIONS routes for inventory
+    Route::options('/inventory/statistics', function () { return response('', 204); });
+    Route::options('/inventory/products', function () { return response('', 204); });
+    Route::options('/inventory/transactions', function () { return response('', 204); });
+    Route::options('/inventory/products/{productId}/transactions', function () { return response('', 204); });
+    Route::options('/inventory/products/{productId}/adjust', function () { return response('', 204); });
+    Route::options('/inventory/bulk-import', function () { return response('', 204); });
+    
     // Categories
     Route::get('/categories', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'index']);
     Route::post('/categories', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'store']);
