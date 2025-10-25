@@ -270,43 +270,55 @@ class InventoryController extends Controller
     }
 
     /**
-     * Get products with inventory (filterable).
+     * Get all products (with and without inventory) for management.
      */
     public function products(Request $request)
     {
         try {
             $perPage = $request->get('per_page', 15);
             
-            $query = Product::where('has_inventory', true)
-                ->with('category');
+            $query = Product::with('category');
 
-            // Filter by stock status
-            if ($request->has('stock_status')) {
+            // Filter by has_inventory status
+            if ($request->has('has_inventory') && $request->has_inventory !== null) {
+                $query->where('has_inventory', $request->boolean('has_inventory'));
+            }
+
+            // Filter by stock status (only for products with inventory)
+            if ($request->has('stock_status') && $request->stock_status !== 'all') {
                 switch ($request->stock_status) {
                     case 'in_stock':
-                        $query->where('stock_quantity', '>', 0);
+                        $query->where('has_inventory', true)
+                              ->where('stock_quantity', '>', 0);
                         break;
                     case 'out_of_stock':
-                        $query->where('stock_quantity', '<=', 0);
+                        $query->where('has_inventory', true)
+                              ->where('stock_quantity', '<=', 0);
                         break;
                     case 'low_stock':
-                        $query->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                        $query->where('has_inventory', true)
+                              ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
                               ->where('stock_quantity', '>', 0);
                         break;
                 }
             }
 
             // Search by name
-            if ($request->has('search')) {
+            if ($request->has('search') && $request->search) {
                 $query->where('title', 'like', '%' . $request->search . '%');
             }
 
             // Sort
-            $sortBy = $request->get('sort_by', 'stock_quantity');
-            $sortOrder = $request->get('sort_order', 'asc');
+            $sortBy = $request->get('sort_by', 'created_at');
+            $sortOrder = $request->get('sort_order', 'desc');
             
-            if (in_array($sortBy, ['stock_quantity', 'title', 'price', 'created_at'])) {
-                $query->orderBy($sortBy, $sortOrder);
+            if (in_array($sortBy, ['stock_quantity', 'title', 'price', 'created_at', 'id'])) {
+                // For stock_quantity, handle null values for products without inventory
+                if ($sortBy === 'stock_quantity') {
+                    $query->orderByRaw('stock_quantity IS NULL, stock_quantity ' . $sortOrder);
+                } else {
+                    $query->orderBy($sortBy, $sortOrder);
+                }
             }
 
             $products = $query->paginate($perPage);

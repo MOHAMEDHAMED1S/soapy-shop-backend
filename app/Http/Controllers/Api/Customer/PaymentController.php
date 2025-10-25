@@ -326,117 +326,111 @@ class PaymentController extends Controller
         try {
             // MyFatoorah sends different parameter names
             $paymentId = $request->get('paymentId') ?? $request->get('Id');
-            $orderId = $request->get('order_id') ?? $request->get('UserDefinedField');
             
             // Log the request for debugging
             Log::info('MyFatoorah Success Callback', [
                 'all_params' => $request->all(),
-                'paymentId' => $paymentId,
-                'orderId' => $orderId
+                'paymentId' => $paymentId
             ]);
 
             if (!$paymentId) {
-                return redirect()->away(config('app.frontend_url') . '/payment/failure?error=missing_params');
+                Log::error('Missing paymentId in callback', [
+                    'all_params' => $request->all()
+                ]);
+                return redirect()->away(config('app.frontend_url') . '/payment/failure?error=missing_payment_id');
             }
 
-            // If we don't have orderId from UserDefinedField, try to find it by payment
-            if (!$orderId) {
-                Log::info('Searching for payment with paymentId: ' . $paymentId);
+            // Get payment details from MyFatoorah to get the correct order
+            $paymentData = $this->paymentService->verifyPayment($paymentId);
+            
+            if (!$paymentData['success']) {
+                Log::error('Failed to verify payment with MyFatoorah', [
+                    'paymentId' => $paymentId,
+                    'error' => $paymentData['error'] ?? 'Unknown error'
+                ]);
+                return redirect()->away(config('app.frontend_url') . '/payment/failure?error=verification_failed');
+            }
+
+            // Extract order info from MyFatoorah response
+            $invoiceData = $paymentData['data'];
+            $orderId = null;
+            
+            // Try to get order_id from UserDefinedField (sent during initiate)
+            if (isset($invoiceData['UserDefinedField']) && !empty($invoiceData['UserDefinedField'])) {
+                $orderId = $invoiceData['UserDefinedField'];
+                Log::info('Found orderId from UserDefinedField: ' . $orderId);
+            }
+            
+            // Fallback: Try to get order by CustomerReference (order_number)
+            if (!$orderId && isset($invoiceData['CustomerReference']) && !empty($invoiceData['CustomerReference'])) {
+                $orderNumber = $invoiceData['CustomerReference'];
+                Log::info('Searching for order by order_number: ' . $orderNumber);
                 
-                // First try to find by invoice_reference (InvoiceId from MyFatoorah)
-                $payment = Payment::where('invoice_reference', $paymentId)->first();
+                $order = Order::where('order_number', $orderNumber)->first();
+                if ($order) {
+                    $orderId = $order->id;
+                    Log::info('Found order by order_number: ' . $orderId);
+                }
+            }
+            
+            // Last resort: Try to find payment by invoice_reference
+            if (!$orderId) {
+                $invoiceId = $invoiceData['InvoiceId'] ?? $paymentId;
+                Log::info('Searching for payment by invoice_reference: ' . $invoiceId);
+                
+                $payment = Payment::where('invoice_reference', $invoiceId)->first();
                 if ($payment) {
-                    Log::info('Found payment by invoice_reference: ' . $payment->id);
                     $orderId = $payment->order_id;
-                } else {
-                    // Try to find by invoice_id in response_raw JSON
-                    $payment = Payment::whereRaw("JSON_EXTRACT(response_raw, '$.InvoiceId') = ?", [$paymentId])->first();
-                    if ($payment) {
-                        Log::info('Found payment by InvoiceId in response_raw: ' . $payment->id);
-                        $orderId = $payment->order_id;
-                    } else {
-                        // Try to find by payment_id in response_raw JSON (for different payment methods)
-                        $payment = Payment::whereRaw("JSON_EXTRACT(response_raw, '$.PaymentId') = ?", [$paymentId])->first();
-                        if ($payment) {
-                            Log::info('Found payment by PaymentId in response_raw: ' . $payment->id);
-                            $orderId = $payment->order_id;
-                        } else {
-                            // Try to find by any numeric field in response_raw that matches
-                            $payment = Payment::whereRaw("JSON_EXTRACT(response_raw, '$.Data.InvoiceId') = ?", [$paymentId])->first();
-                            if ($payment) {
-                                Log::info('Found payment by Data.InvoiceId in response_raw: ' . $payment->id);
-                                $orderId = $payment->order_id;
-                            } else {
-                                // Log all recent payments for debugging
-                                $recentPayments = Payment::latest()->take(3)->get(['id', 'order_id', 'invoice_reference', 'response_raw']);
-                                Log::info('Recent payments for debugging:', $recentPayments->toArray());
-                            }
-                        }
-                    }
+                    Log::info('Found order via payment record: ' . $orderId);
                 }
             }
 
             if (!$orderId) {
                 Log::error('Could not find order for payment', [
                     'paymentId' => $paymentId,
+                    'invoiceData' => $invoiceData,
                     'all_params' => $request->all()
                 ]);
                 
-                // Try to find the most recent payment that might be related
-                // This is a fallback for when MyFatoorah sends different payment IDs
-                $recentPayment = Payment::latest()->first();
-                if ($recentPayment) {
-                    Log::info('Using recent payment as fallback: ' . $recentPayment->id);
-                    $orderId = $recentPayment->order_id;
-                } else {
-                    // If no payments exist at all, redirect to generic success
-                    return redirect()->away(config('app.frontend_url') . '/payment/success?order=unknown&status=completed&message=payment_processed');
-                }
+                // DO NOT use fallback! Return error instead
+                return redirect()->away(config('app.frontend_url') . '/payment/failure?error=order_not_found');
             }
 
             $order = Order::with('payment')->find($orderId);
 
             if (!$order || !$order->payment) {
+                Log::error('Order or payment not found after finding orderId', [
+                    'orderId' => $orderId
+                ]);
                 return redirect()->away(config('app.frontend_url') . '/payment/failure?error=order_not_found');
             }
 
-            // Verify payment with MyFatoorah using the correct InvoiceId
-            $invoiceId = $order->payment->invoice_reference;
-            $paymentStatus = $this->paymentService->verifyPayment($invoiceId);
-
-            if (!$paymentStatus['success']) {
-                Log::warning('Payment verification failed, but proceeding with success', [
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                    'invoice_id' => $invoiceId,
-                    'payment_id_from_callback' => $paymentId,
-                    'verification_error' => $paymentStatus['error'] ?? 'Unknown error'
-                ]);
-                
-                // Even if verification fails, we'll treat it as success since we found the order
-                // This handles cases where MyFatoorah sends different payment IDs
-                $paymentStatus = [
-                    'success' => true,
-                    'data' => [
-                        'InvoiceStatus' => 'Paid', // Assume paid since we found the order
-                        'InvoiceId' => $invoiceId
-                    ]
-                ];
-            }
+            // Use the payment data we already got from MyFatoorah
+            // No need to verify again
+            $paymentStatus = $paymentData; // Already verified above
+            
+            Log::info('Processing payment callback', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'invoice_status' => $invoiceData['InvoiceStatus'] ?? 'unknown',
+                'invoice_id' => $invoiceData['InvoiceId'] ?? 'unknown'
+            ]);
 
             DB::beginTransaction();
 
             // Update payment status
             $order->payment->update([
-                'status' => $paymentStatus['data']['InvoiceStatus'],
+                'status' => $invoiceData['InvoiceStatus'] ?? 'unknown',
                 'response_raw' => array_merge(
-                    $order->payment->response_raw,
-                    ['verification_response' => $paymentStatus['data']]
+                    $order->payment->response_raw ?? [],
+                    ['callback_response' => $invoiceData]
                 )
             ]);
 
             // Update order status based on payment status
-            if ($paymentStatus['data']['InvoiceStatus'] === 'Paid') {
+            $invoiceStatus = $invoiceData['InvoiceStatus'] ?? 'unknown';
+            
+            if ($invoiceStatus === 'Paid') {
                 $order->update(['status' => 'paid']);
                 
                 // Deduct inventory for order items
@@ -445,14 +439,14 @@ class PaymentController extends Controller
                 
                 // Create order notification using NotificationService
                 $this->notificationService->createOrderNotification($order, 'order_paid');
-            } elseif ($paymentStatus['data']['InvoiceStatus'] === 'Failed') {
+            } elseif ($invoiceStatus === 'Failed') {
                 $order->update(['status' => 'pending']);
             }
 
             DB::commit();
 
             // Redirect to frontend success page
-            return redirect()->away(config('app.frontend_url') . '/payment/success?order=' . $order->order_number . '&status=' . $paymentStatus['data']['InvoiceStatus']);
+            return redirect()->away(config('app.frontend_url') . '/payment/success?order=' . $order->order_number . '&status=' . $invoiceStatus);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -467,8 +461,36 @@ class PaymentController extends Controller
     public function handleFailureCallback(Request $request)
     {
         try {
-            $orderId = $request->get('order_id');
+            Log::info('MyFatoorah Failure Callback', [
+                'all_params' => $request->all()
+            ]);
+
+            $paymentId = $request->get('paymentId') ?? $request->get('Id');
             $error = $request->get('error', 'payment_failed');
+            $orderId = null;
+
+            // Try to get payment details from MyFatoorah to identify the order
+            if ($paymentId) {
+                $paymentData = $this->paymentService->verifyPayment($paymentId);
+                
+                if ($paymentData['success']) {
+                    $invoiceData = $paymentData['data'];
+                    
+                    // Try to get order_id from UserDefinedField
+                    if (isset($invoiceData['UserDefinedField']) && !empty($invoiceData['UserDefinedField'])) {
+                        $orderId = $invoiceData['UserDefinedField'];
+                    }
+                    
+                    // Fallback: Try to get order by CustomerReference (order_number)
+                    if (!$orderId && isset($invoiceData['CustomerReference']) && !empty($invoiceData['CustomerReference'])) {
+                        $orderNumber = $invoiceData['CustomerReference'];
+                        $order = Order::where('order_number', $orderNumber)->first();
+                        if ($order) {
+                            $orderId = $order->id;
+                        }
+                    }
+                }
+            }
 
             if ($orderId) {
                 $order = Order::find($orderId);
@@ -478,9 +500,19 @@ class PaymentController extends Controller
                         $order->update(['status' => 'pending']);
                     }
                     
+                    Log::info('Payment failed for order', [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number
+                    ]);
+                    
                     return redirect()->away(config('app.frontend_url') . '/payment/failure?order=' . $order->order_number . '&error=' . $error);
                 }
             }
+
+            Log::warning('Could not identify order for failed payment', [
+                'paymentId' => $paymentId,
+                'all_params' => $request->all()
+            ]);
 
             return redirect()->away(config('app.frontend_url') . '/payment/failure?error=' . $error);
 

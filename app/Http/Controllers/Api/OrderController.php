@@ -231,7 +231,7 @@ class OrderController extends Controller
         try {
             // Phone verification is now optional
             $order = Order::where('order_number', $orderNumber)
-                ->with(['orderItems.product', 'payment'])
+                ->with(['orderItems', 'payment'])
                 ->first();
 
             if (!$order) {
@@ -241,9 +241,26 @@ class OrderController extends Controller
                 ], 404);
             }
 
+            // Transform order items to include product snapshot with discount info
+            $orderData = $order->toArray();
+            
+            // Remove the original orderItems and replace with formatted data
+            unset($orderData['order_items']);
+            
+            $orderData['order_items'] = $order->orderItems->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_price' => $item->product_price, // السعر المستخدم وقت الطلب (بعد الخصم)
+                    'quantity' => $item->quantity,
+                    'product_snapshot' => $item->product_snapshot, // يحتوي على معلومات الخصم وقت الطلب
+                    'subtotal' => $item->product_price * $item->quantity,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $order,
+                'data' => $orderData,
                 'message' => 'Order retrieved successfully'
             ]);
 
@@ -620,7 +637,7 @@ class OrderController extends Controller
             \Illuminate\Support\Facades\Log::info('trackOrder called with orderNumber: ' . $orderNumber);
             
             $order = Order::with([
-                'orderItems.product.category',
+                'orderItems',
                 'payment',
                 'customer'
             ])->where('order_number', $orderNumber)
@@ -645,10 +662,24 @@ class OrderController extends Controller
             // Get order status information
             $statusInfo = $this->getOrderStatusInfo($order);
 
+            // Transform order items to use product_snapshot
+            $orderData = $order->toArray();
+            unset($orderData['order_items']);
+            $orderData['order_items'] = $order->orderItems->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_price' => $item->product_price,
+                    'quantity' => $item->quantity,
+                    'product_snapshot' => $item->product_snapshot,
+                    'subtotal' => $item->product_price * $item->quantity,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'order' => $order,
+                    'order' => $orderData,
                     'timeline' => $timeline,
                     'status_info' => $statusInfo
                 ],
@@ -671,7 +702,7 @@ class OrderController extends Controller
     {
         try {
             $order = Order::with([
-                'orderItems.product.category',
+                'orderItems',
                 'payment',
                 'customer',
                 'discountCode'
@@ -685,9 +716,23 @@ class OrderController extends Controller
                 ], 404);
             }
 
+            // Transform order items to use product_snapshot
+            $orderData = $order->toArray();
+            unset($orderData['order_items']);
+            $orderData['order_items'] = $order->orderItems->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_price' => $item->product_price,
+                    'quantity' => $item->quantity,
+                    'product_snapshot' => $item->product_snapshot,
+                    'subtotal' => $item->product_price * $item->quantity,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $order,
+                'data' => $orderData,
                 'message' => 'Order details retrieved successfully'
             ]);
 
