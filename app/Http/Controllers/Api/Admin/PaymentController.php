@@ -330,117 +330,223 @@ class PaymentController extends Controller
     }
 
     /**
-     * Verify pending payments with MyFatoorah
-     * Check all orders with status 'awaiting_payment' and verify if they were actually paid
-     * Returns list of orders that are paid but still marked as awaiting_payment
+     * Comprehensive payment verification
+     * Checks all orders and verifies payment status with MyFatoorah
+     * Organized into two main sections: awaiting_payment and completed orders
      */
     public function verifyPendingPayments(Request $request)
     {
         try {
-            \Illuminate\Support\Facades\Log::info('Starting verification of pending payments');
+            \Illuminate\Support\Facades\Log::info('Starting comprehensive payment verification');
 
-            // Get all orders with awaiting_payment status that have a payment record
-            $pendingOrders = \App\Models\Order::where('status', 'awaiting_payment')
-                ->with(['payment', 'orderItems.product'])
-                ->whereHas('payment', function($query) {
-                    $query->whereNotNull('invoice_reference');
-                })
-                ->get();
+            // Section 1: Awaiting Payment Orders
+            $awaitingPaymentResults = $this->verifyAwaitingPaymentOrders();
+            
+            // Section 2: Completed Orders (paid, shipped, delivered)
+            $completedOrdersResults = $this->verifyCompletedOrders();
 
-            \Illuminate\Support\Facades\Log::info('Found ' . $pendingOrders->count() . ' orders with awaiting_payment status');
-
-            $paidButNotUpdated = [];
-            $stillPending = [];
-            $errors = [];
-            $processed = 0;
-
-            foreach ($pendingOrders as $order) {
-                $processed++;
-                
-                try {
-                    $invoiceReference = $order->payment->invoice_reference;
-                    
-                    \Illuminate\Support\Facades\Log::info("Checking order #{$order->id} - Invoice: {$invoiceReference}");
-
-                    // Verify payment status with MyFatoorah
-                    $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
-
-                    if ($paymentStatus['success']) {
-                        $invoiceData = $paymentStatus['data'];
-                        $status = $invoiceData['InvoiceStatus'] ?? 'unknown';
-
-                        if ($status === 'Paid') {
-                            // This order was paid but not updated!
-                            $paidButNotUpdated[] = [
-                                'order_id' => $order->id,
-                                'order_number' => $order->order_number,
-                                'customer_name' => $order->customer_name,
-                                'customer_phone' => $order->customer_phone,
-                                'total_amount' => $order->total_amount,
-                                'currency' => $order->currency,
-                                'invoice_reference' => $invoiceReference,
-                                'invoice_status' => $status,
-                                'order_created_at' => $order->created_at->toDateTimeString(),
-                                'payment_date' => $invoiceData['CreatedDate'] ?? null,
-                                'items_count' => $order->orderItems->count(),
-                            ];
-                        } else {
-                            $stillPending[] = [
-                                'order_id' => $order->id,
-                                'order_number' => $order->order_number,
-                                'invoice_status' => $status,
-                                'invoice_reference' => $invoiceReference,
-                            ];
-                        }
-                    } else {
-                        $errors[] = [
-                            'order_id' => $order->id,
-                            'order_number' => $order->order_number,
-                            'invoice_reference' => $invoiceReference,
-                            'error' => $paymentStatus['error'] ?? 'Unknown error'
-                        ];
-                    }
-
-                } catch (\Exception $e) {
-                    $errors[] = [
-                        'order_id' => $order->id,
-                        'order_number' => $order->order_number,
-                        'error' => $e->getMessage()
-                    ];
-                }
-            }
-
-            \Illuminate\Support\Facades\Log::info("Verification complete. Found {count} paid orders not updated", [
-                'count' => count($paidButNotUpdated)
-            ]);
+            // Overall Summary
+            $overallSummary = [
+                'total_orders_checked' => $awaitingPaymentResults['summary']['total_checked'] + $completedOrdersResults['summary']['total_checked'],
+                'critical_issues_found' => $awaitingPaymentResults['summary']['paid_but_not_updated'] + $completedOrdersResults['summary']['not_paid_but_marked'],
+                'verification_timestamp' => now()->toDateTimeString(),
+            ];
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'summary' => [
-                        'total_checked' => $processed,
-                        'paid_but_not_updated' => count($paidButNotUpdated),
-                        'still_pending' => count($stillPending),
-                        'errors' => count($errors),
-                    ],
-                    'paid_but_not_updated' => $paidButNotUpdated,
-                    'still_pending' => $stillPending,
-                    'errors' => $errors,
+                    'overall_summary' => $overallSummary,
+                    'awaiting_payment_section' => $awaitingPaymentResults,
+                    'completed_orders_section' => $completedOrdersResults,
                 ],
-                'message' => 'Payment verification completed successfully'
+                'message' => 'Comprehensive payment verification completed successfully'
             ]);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error in verifyPendingPayments', [
+            \Illuminate\Support\Facades\Log::error('Error in comprehensive payment verification', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error verifying pending payments',
+                'message' => 'Error verifying payments',
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Verify orders with status 'awaiting_payment'
+     * Check if they were actually paid but not updated
+     */
+    private function verifyAwaitingPaymentOrders()
+    {
+        $pendingOrders = \App\Models\Order::where('status', 'awaiting_payment')
+            ->with(['payment', 'orderItems.product'])
+            ->whereHas('payment', function($query) {
+                $query->whereNotNull('invoice_reference');
+            })
+            ->get();
+
+        \Illuminate\Support\Facades\Log::info('Found ' . $pendingOrders->count() . ' orders with awaiting_payment status');
+
+        $actuallyPaid = [];
+        $correctlyPending = [];
+        $errors = [];
+
+        foreach ($pendingOrders as $order) {
+            try {
+                $invoiceReference = $order->payment->invoice_reference;
+                $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
+
+                if ($paymentStatus['success']) {
+                    $invoiceData = $paymentStatus['data'];
+                    $status = $invoiceData['InvoiceStatus'] ?? 'unknown';
+
+                    if ($status === 'Paid') {
+                        // ⚠️ Critical: Order is PAID but still marked as awaiting_payment
+                        $actuallyPaid[] = [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'customer_name' => $order->customer_name,
+                            'customer_phone' => $order->customer_phone,
+                            'customer_email' => $order->customer_email,
+                            'total_amount' => $order->total_amount,
+                            'currency' => $order->currency,
+                            'invoice_reference' => $invoiceReference,
+                            'myfatoorah_status' => $status,
+                            'database_status' => $order->status,
+                            'order_created_at' => $order->created_at->toDateTimeString(),
+                            'payment_date' => $invoiceData['CreatedDate'] ?? null,
+                            'items_count' => $order->orderItems->count(),
+                            'issue' => 'PAID_BUT_NOT_UPDATED',
+                            'severity' => 'CRITICAL',
+                        ];
+                    } else {
+                        // ✅ Correctly pending
+                        $correctlyPending[] = [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'myfatoorah_status' => $status,
+                            'invoice_reference' => $invoiceReference,
+                        ];
+                    }
+                } else {
+                    $errors[] = [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'invoice_reference' => $invoiceReference,
+                        'error' => $paymentStatus['error'] ?? 'Unknown error'
+                    ];
+                }
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        return [
+            'summary' => [
+                'total_checked' => $pendingOrders->count(),
+                'paid_but_not_updated' => count($actuallyPaid),
+                'correctly_pending' => count($correctlyPending),
+                'errors' => count($errors),
+            ],
+            'critical_issues' => $actuallyPaid,
+            'correctly_pending' => $correctlyPending,
+            'errors' => $errors,
+        ];
+    }
+
+    /**
+     * Verify orders with status 'paid', 'shipped', or 'delivered'
+     * Check if they were actually paid in MyFatoorah
+     */
+    private function verifyCompletedOrders()
+    {
+        $completedOrders = \App\Models\Order::whereIn('status', ['paid', 'shipped', 'delivered'])
+            ->with(['payment', 'orderItems.product'])
+            ->whereHas('payment', function($query) {
+                $query->whereNotNull('invoice_reference');
+            })
+            ->get();
+
+        \Illuminate\Support\Facades\Log::info('Found ' . $completedOrders->count() . ' completed orders to verify');
+
+        $correctlyPaid = [];
+        $notActuallyPaid = [];
+        $errors = [];
+
+        foreach ($completedOrders as $order) {
+            try {
+                $invoiceReference = $order->payment->invoice_reference;
+                $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
+
+                if ($paymentStatus['success']) {
+                    $invoiceData = $paymentStatus['data'];
+                    $status = $invoiceData['InvoiceStatus'] ?? 'unknown';
+
+                    if ($status === 'Paid') {
+                        // ✅ Correctly paid
+                        $correctlyPaid[] = [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'database_status' => $order->status,
+                            'myfatoorah_status' => $status,
+                            'verified' => true,
+                        ];
+                    } else {
+                        // ⚠️ Critical: Order is marked as paid/shipped/delivered but NOT paid in MyFatoorah
+                        $notActuallyPaid[] = [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'customer_name' => $order->customer_name,
+                            'customer_phone' => $order->customer_phone,
+                            'customer_email' => $order->customer_email,
+                            'total_amount' => $order->total_amount,
+                            'currency' => $order->currency,
+                            'invoice_reference' => $invoiceReference,
+                            'database_status' => $order->status,
+                            'myfatoorah_status' => $status,
+                            'order_created_at' => $order->created_at->toDateTimeString(),
+                            'items_count' => $order->orderItems->count(),
+                            'issue' => 'MARKED_AS_PAID_BUT_NOT_PAID',
+                            'severity' => 'CRITICAL',
+                        ];
+                    }
+                } else {
+                    $errors[] = [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'database_status' => $order->status,
+                        'invoice_reference' => $invoiceReference,
+                        'error' => $paymentStatus['error'] ?? 'Unknown error'
+                    ];
+                }
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'database_status' => $order->status,
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        return [
+            'summary' => [
+                'total_checked' => $completedOrders->count(),
+                'correctly_paid' => count($correctlyPaid),
+                'not_paid_but_marked' => count($notActuallyPaid),
+                'errors' => count($errors),
+            ],
+            'critical_issues' => $notActuallyPaid,
+            'correctly_paid' => array_slice($correctlyPaid, 0, 10), // Show first 10 only to reduce response size
+            'errors' => $errors,
+        ];
     }
 }
