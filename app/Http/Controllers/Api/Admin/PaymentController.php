@@ -408,11 +408,22 @@ class PaymentController extends Controller
         $actuallyPaid = [];
         $correctlyPending = [];
         $errors = [];
+        $processed = 0;
 
         foreach ($pendingOrders as $order) {
+            $processed++;
+            
             try {
                 $invoiceReference = $order->payment->invoice_reference;
-                $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
+                
+                // Add delay to avoid rate limiting (500ms between requests)
+                if ($processed > 1) {
+                    usleep(500000); // 0.5 seconds
+                }
+                
+                \Illuminate\Support\Facades\Log::info("Verifying order {$processed}/{$pendingOrders->count()}: #{$order->id}");
+                
+                $paymentStatus = $this->verifyPaymentWithRetry($invoiceReference);
 
                 if ($paymentStatus['success']) {
                     $invoiceData = $paymentStatus['data'];
@@ -495,7 +506,11 @@ class PaymentController extends Controller
         $noPaymentRecord = [];
         $errors = [];
 
+        $processed = 0;
+        
         foreach ($completedOrders as $order) {
+            $processed++;
+            
             try {
                 // Check if order has payment record with invoice_reference
                 if (!$order->payment || !$order->payment->invoice_reference) {
@@ -520,9 +535,16 @@ class PaymentController extends Controller
                     continue;
                 }
 
+                // Add delay to avoid rate limiting (500ms between requests)
+                if ($processed > 1) {
+                    usleep(500000); // 0.5 seconds
+                }
+                
+                \Illuminate\Support\Facades\Log::info("Verifying completed order {$processed}/{$completedOrders->count()}: #{$order->id}");
+
                 // Verify with MyFatoorah
                 $invoiceReference = $order->payment->invoice_reference;
-                $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
+                $paymentStatus = $this->verifyPaymentWithRetry($invoiceReference);
 
                 if ($paymentStatus['success']) {
                     $invoiceData = $paymentStatus['data'];
@@ -586,6 +608,64 @@ class PaymentController extends Controller
             'critical_issues' => array_merge($notActuallyPaid, $noPaymentRecord),
             'correctly_paid' => array_slice($correctlyPaid, 0, 10), // Show first 10 only to reduce response size
             'errors' => $errors,
+        ];
+    }
+
+    /**
+     * Verify payment with retry logic for rate limiting
+     * Implements exponential backoff for 429 errors
+     */
+    private function verifyPaymentWithRetry($invoiceReference, $maxRetries = 3)
+    {
+        $attempt = 0;
+        $lastError = null;
+
+        while ($attempt < $maxRetries) {
+            $attempt++;
+
+            try {
+                $result = $this->paymentService->verifyPayment($invoiceReference);
+
+                // Check if error is rate limiting (429)
+                if (!$result['success']) {
+                    $error = $result['error'] ?? '';
+                    
+                    // Check for rate limiting error
+                    if (strpos($error, '429') !== false || strpos($error, '1015') !== false) {
+                        $lastError = $result;
+                        
+                        // Exponential backoff: 2s, 4s, 8s
+                        $waitTime = pow(2, $attempt) * 1000000; // in microseconds
+                        
+                        \Illuminate\Support\Facades\Log::warning("Rate limit hit for invoice {$invoiceReference}, retry {$attempt}/{$maxRetries}, waiting " . ($waitTime/1000000) . "s");
+                        
+                        if ($attempt < $maxRetries) {
+                            usleep($waitTime);
+                            continue;
+                        }
+                    }
+                }
+
+                return $result;
+
+            } catch (\Exception $e) {
+                $lastError = [
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ];
+
+                if ($attempt < $maxRetries) {
+                    $waitTime = pow(2, $attempt) * 1000000;
+                    usleep($waitTime);
+                    continue;
+                }
+            }
+        }
+
+        // If all retries failed, return last error
+        return $lastError ?? [
+            'success' => false,
+            'error' => 'Max retries reached'
         ];
     }
 }
