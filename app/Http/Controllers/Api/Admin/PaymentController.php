@@ -348,8 +348,22 @@ class PaymentController extends Controller
             // Overall Summary
             $overallSummary = [
                 'total_orders_checked' => $awaitingPaymentResults['summary']['total_checked'] + $completedOrdersResults['summary']['total_checked'],
-                'critical_issues_found' => $awaitingPaymentResults['summary']['paid_but_not_updated'] + $completedOrdersResults['summary']['not_paid_but_marked'],
+                'critical_issues_found' => 
+                    $awaitingPaymentResults['summary']['paid_but_not_updated'] + 
+                    $completedOrdersResults['summary']['not_paid_but_marked'] +
+                    $completedOrdersResults['summary']['no_payment_record'],
                 'verification_timestamp' => now()->toDateTimeString(),
+                
+                // Detailed breakdown
+                'issues_breakdown' => [
+                    'awaiting_payment_section' => [
+                        'paid_but_not_updated' => $awaitingPaymentResults['summary']['paid_but_not_updated'],
+                    ],
+                    'completed_orders_section' => [
+                        'not_paid_but_marked' => $completedOrdersResults['summary']['not_paid_but_marked'],
+                        'no_payment_record' => $completedOrdersResults['summary']['no_payment_record'],
+                    ],
+                ],
             ];
 
             return response()->json([

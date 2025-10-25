@@ -7,6 +7,27 @@ API متقدم للتحقق من صحة حالات الدفع لجميع الط�
 
 ---
 
+## ⚠️ التحديث الأخير - إصلاح مهم!
+
+### المشكلة السابقة:
+- الـ API القديم كان يفحص فقط الطلبات التي **لها `payment` record مع `invoice_reference`**
+- إذا قام أحد بتغيير حالة الطلب يدوياً إلى `paid` بدون دفع، **لن يكتشفه!** ❌
+
+### الحل الجديد:
+- ✅ الآن يفحص **جميع** الطلبات المكتملة (paid/shipped/delivered)
+- ✅ يكتشف الطلبات التي **ليس لها payment record أصلاً**
+- ✅ يكتشف الطلبات التي لها payment لكن **بدون invoice_reference**
+- 🚨 Issue type جديد: `NO_PAYMENT_RECORD`
+
+### متى يحدث هذا:
+1. **تغيير يدوي** للحالة من لوحة التحكم بدون دفع فعلي
+2. **خطأ برمجي** لم ينشئ payment record
+3. **احتمال احتيال** أو تلاعب في النظام
+
+**مثال:** طلب حالته `paid` في قاعدة البيانات، لكن ليس له أي payment record → سيتم اكتشافه الآن! 🎯
+
+---
+
 ## Endpoint
 
 ```http
@@ -132,6 +153,8 @@ Authorization: Bearer {admin_token}
 
 يفحص جميع الطلبات التي حالتها `paid`, `shipped`, أو `delivered` ويتحقق من MyFatoorah:
 
+**⚠️ مهم:** يفحص **جميع** الطلبات المكتملة، حتى لو لم يكن لها `payment` record!
+
 ```json
 {
   "completed_orders_section": {
@@ -139,6 +162,7 @@ Authorization: Bearer {admin_token}
       "total_checked": 26,
       "correctly_paid": 23,
       "not_paid_but_marked": 3,
+      "no_payment_record": 2,
       "errors": 0
     },
     "critical_issues": [
@@ -180,6 +204,7 @@ Authorization: Bearer {admin_token}
 | `total_checked` | integer | عدد الطلبات المكتملة المفحوصة |
 | `correctly_paid` | integer | ✅ مدفوعة بشكل صحيح |
 | `not_paid_but_marked` | integer | **🔴 موضوعة كمدفوعة لكن ليست مدفوعة!** |
+| `no_payment_record` | integer | **🚨 ليس لها payment record أصلاً!** |
 | `errors` | integer | أخطاء أثناء الفحص |
 
 ### Critical Issues - القسم الثاني
@@ -228,6 +253,26 @@ Authorization: Bearer {admin_token}
 - **الوصف:** طلب محدّد كـ paid/shipped/delivered لكن MyFatoorah تقول NOT Paid
 - **الخطورة:** CRITICAL
 - **الحل:** مراجعة فورية + تحقيق + إيقاف الشحن إن أمكن
+
+### 🚨 NO_PAYMENT_RECORD (جديد!)
+- **الوصف:** طلب محدّد كـ paid/shipped/delivered لكن **ليس له payment record أو invoice_reference أصلاً!**
+- **الخطورة:** CRITICAL
+- **الحل:** تحقيق فوري! غالباً تم تغيير حالة الطلب يدوياً بدون دفع
+- **متى يحدث:** 
+  - عندما يقوم أحد بتغيير حالة الطلب يدوياً من لوحة التحكم
+  - عندما يكون هناك خطأ برمجي لم ينشئ payment record
+  - احتمال احتيال أو تلاعب
+- **مثال:**
+  ```json
+  {
+    "issue": "NO_PAYMENT_RECORD",
+    "severity": "CRITICAL",
+    "database_status": "paid",
+    "has_payment_record": false,
+    "has_invoice_reference": false,
+    "description": "Order marked as completed but has no payment record or invoice reference"
+  }
+  ```
 
 ---
 
@@ -459,21 +504,28 @@ const CompletedOrdersSection = ({ data }) => {
     <div>
       {/* Summary Cards */}
       <Row gutter={16} style={{ marginBottom: 20 }}>
-        <Col span={8}>
+        <Col span={6}>
           <Statistic title="تم فحصه" value={data.summary.total_checked} />
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Statistic 
             title="✅ صحيح ومدفوع"
             value={data.summary.correctly_paid}
             valueStyle={{ color: '#3f8600' }}
           />
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Statistic 
             title="🔴 موضوع كمدفوع لكن ليس مدفوع"
             value={data.summary.not_paid_but_marked}
             valueStyle={{ color: '#cf1322' }}
+          />
+        </Col>
+        <Col span={6}>
+          <Statistic 
+            title="🚨 بدون payment record"
+            value={data.summary.no_payment_record}
+            valueStyle={{ color: '#d4380d' }}
           />
         </Col>
       </Row>
@@ -515,20 +567,33 @@ const CompletedOrdersSection = ({ data }) => {
                 render: (_, record) => 
                   <strong>{record.total_amount} {record.currency}</strong>,
               },
-              {
-                title: 'الحالة',
-                key: 'status',
-                render: (_, record) => (
-                  <div>
-                    <div>
-                      <Badge status="success" text={`DB: ${record.database_status}`} />
-                    </div>
-                    <div>
-                      <Badge status="error" text={`MF: ${record.myfatoorah_status}`} />
-                    </div>
-                  </div>
-                ),
-              },
+                  {
+                    title: 'المشكلة',
+                    key: 'issue',
+                    render: (_, record) => {
+                      if (record.issue === 'NO_PAYMENT_RECORD') {
+                        return (
+                          <div>
+                            <Badge status="error" text="بدون payment record" />
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+                              {record.has_payment_record ? '❌ No invoice' : '❌ No payment'}
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div>
+                            <div>
+                              <Badge status="success" text={`DB: ${record.database_status}`} />
+                            </div>
+                            <div>
+                              <Badge status="error" text={`MF: ${record.myfatoorah_status}`} />
+                            </div>
+                          </div>
+                        );
+                      }
+                    },
+                  },
               {
                 title: 'الإجراءات',
                 key: 'actions',
