@@ -465,24 +465,48 @@ class PaymentController extends Controller
     /**
      * Verify orders with status 'paid', 'shipped', or 'delivered'
      * Check if they were actually paid in MyFatoorah
+     * Also detects orders marked as completed but have NO payment record at all
      */
     private function verifyCompletedOrders()
     {
+        // Get ALL completed orders (including those without payment records)
         $completedOrders = \App\Models\Order::whereIn('status', ['paid', 'shipped', 'delivered'])
             ->with(['payment', 'orderItems.product'])
-            ->whereHas('payment', function($query) {
-                $query->whereNotNull('invoice_reference');
-            })
             ->get();
 
         \Illuminate\Support\Facades\Log::info('Found ' . $completedOrders->count() . ' completed orders to verify');
 
         $correctlyPaid = [];
         $notActuallyPaid = [];
+        $noPaymentRecord = [];
         $errors = [];
 
         foreach ($completedOrders as $order) {
             try {
+                // Check if order has payment record with invoice_reference
+                if (!$order->payment || !$order->payment->invoice_reference) {
+                    // 🚨 CRITICAL: Order is marked as completed but has NO payment record!
+                    $noPaymentRecord[] = [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'customer_name' => $order->customer_name,
+                        'customer_phone' => $order->customer_phone,
+                        'customer_email' => $order->customer_email,
+                        'total_amount' => $order->total_amount,
+                        'currency' => $order->currency,
+                        'database_status' => $order->status,
+                        'has_payment_record' => $order->payment ? true : false,
+                        'has_invoice_reference' => $order->payment && $order->payment->invoice_reference ? true : false,
+                        'order_created_at' => $order->created_at->toDateTimeString(),
+                        'items_count' => $order->orderItems->count(),
+                        'issue' => 'NO_PAYMENT_RECORD',
+                        'severity' => 'CRITICAL',
+                        'description' => 'Order marked as completed but has no payment record or invoice reference'
+                    ];
+                    continue;
+                }
+
+                // Verify with MyFatoorah
                 $invoiceReference = $order->payment->invoice_reference;
                 $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
 
@@ -542,9 +566,10 @@ class PaymentController extends Controller
                 'total_checked' => $completedOrders->count(),
                 'correctly_paid' => count($correctlyPaid),
                 'not_paid_but_marked' => count($notActuallyPaid),
+                'no_payment_record' => count($noPaymentRecord),
                 'errors' => count($errors),
             ],
-            'critical_issues' => $notActuallyPaid,
+            'critical_issues' => array_merge($notActuallyPaid, $noPaymentRecord),
             'correctly_paid' => array_slice($correctlyPaid, 0, 10), // Show first 10 only to reduce response size
             'errors' => $errors,
         ];
