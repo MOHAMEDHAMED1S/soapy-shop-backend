@@ -104,8 +104,8 @@ class PaymentService
                 'UserDefinedField' => $order->id,
                 'InvoiceValue' => $itemsTotal, // Use calculated itemsTotal to match InvoiceItems
                 'DisplayCurrencyIso' => $order->currency,
-                'CallBackUrl' => url('/api/v1/payments/success'),
-                'ErrorUrl' => url('/api/v1/payments/failure'),
+                'CallBackUrl' => url('/api/v1/payments/success?order_id=' . $order->id),
+                'ErrorUrl' => url('/api/v1/payments/failure?order_id=' . $order->id),
                 'Language' => 'ar',
                 'NotificationOption' => 'LNK', // Required field
                 'CustomerAddress' => [
