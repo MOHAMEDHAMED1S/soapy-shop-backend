@@ -24,7 +24,7 @@ curl -X POST http://localhost:8000/api/v1/admin/products \
     "description": "صابون طبيعي برائحة اللافندر",
     "price": 12.5,
     "category_id": 1,
-    "images": ["image1.jpg"],
+    "images": [""],
     "has_inventory": true,
     "stock_quantity": 100,
     "low_stock_threshold": 20
