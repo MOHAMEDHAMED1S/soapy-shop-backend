@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\PaymentService;
 use App\Services\NotificationService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +17,17 @@ class PaymentController extends Controller
 {
     protected $paymentService;
     protected $notificationService;
+    protected $whatsappService;
 
-    public function __construct(PaymentService $paymentService, NotificationService $notificationService)
+    public function __construct(
+        PaymentService $paymentService, 
+        NotificationService $notificationService,
+        WhatsAppService $whatsappService
+    )
     {
         $this->paymentService = $paymentService;
         $this->notificationService = $notificationService;
+        $this->whatsappService = $whatsappService;
     }
 
     /**
@@ -407,8 +414,9 @@ class PaymentController extends Controller
 
             DB::commit();
             
-            // Send notification after commit (don't let email failure stop the process)
+            // Send notifications after commit (don't let notification failures stop the process)
             if ($invoiceStatus === 'Paid') {
+                // 1. Send Email Notification
                 try {
                     $this->notificationService->createOrderNotification($order, 'order_paid');
                 } catch (\Exception $e) {
@@ -417,6 +425,17 @@ class PaymentController extends Controller
                         'error' => $e->getMessage()
                     ]);
                     // Continue execution - don't fail the callback because of email
+                }
+
+                // 2. Send WhatsApp Notification to Admin
+                try {
+                    $this->whatsappService->notifyAdminNewPaidOrder($order);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send WhatsApp notification', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue execution - don't fail the callback because of WhatsApp
                 }
             }
 
