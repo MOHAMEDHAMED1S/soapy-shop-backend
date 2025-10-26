@@ -95,6 +95,35 @@ class InventoryController extends Controller
 
             $transactions = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
+            // Transform transactions to handle deleted related data
+            $transactions->getCollection()->transform(function ($transaction) use ($product) {
+                return [
+                    'id' => $transaction->id,
+                    'product_id' => $transaction->product_id,
+                    'product' => [
+                        'id' => $product->id,
+                        'title' => $product->title,
+                        'slug' => $product->slug ?? null,
+                    ],
+                    'type' => $transaction->type,
+                    'quantity' => $transaction->quantity,
+                    'quantity_before' => $transaction->quantity_before,
+                    'quantity_after' => $transaction->quantity_after,
+                    'reason' => $transaction->reason,
+                    'notes' => $transaction->notes,
+                    'order' => $transaction->order ? [
+                        'id' => $transaction->order->id,
+                        'order_number' => $transaction->order->order_number,
+                    ] : null,
+                    'user' => $transaction->user ? [
+                        'id' => $transaction->user->id,
+                        'name' => $transaction->user->name,
+                    ] : null,
+                    'created_at' => $transaction->created_at,
+                    'updated_at' => $transaction->updated_at,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -154,6 +183,39 @@ class InventoryController extends Controller
             }
 
             $transactions = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+            // Transform transactions to handle deleted products
+            $transactions->getCollection()->transform(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'product_id' => $transaction->product_id,
+                    'product' => $transaction->product ? [
+                        'id' => $transaction->product->id,
+                        'title' => $transaction->product->title,
+                        'slug' => $transaction->product->slug,
+                    ] : [
+                        'id' => $transaction->product_id,
+                        'title' => 'منتج محذوف',
+                        'slug' => null,
+                    ],
+                    'type' => $transaction->type,
+                    'quantity' => $transaction->quantity,
+                    'quantity_before' => $transaction->quantity_before,
+                    'quantity_after' => $transaction->quantity_after,
+                    'reason' => $transaction->reason,
+                    'notes' => $transaction->notes,
+                    'order' => $transaction->order ? [
+                        'id' => $transaction->order->id,
+                        'order_number' => $transaction->order->order_number,
+                    ] : null,
+                    'user' => $transaction->user ? [
+                        'id' => $transaction->user->id,
+                        'name' => $transaction->user->name,
+                    ] : null,
+                    'created_at' => $transaction->created_at,
+                    'updated_at' => $transaction->updated_at,
+                ];
+            });
 
             return response()->json([
                 'success' => true,

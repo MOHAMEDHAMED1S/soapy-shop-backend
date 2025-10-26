@@ -431,7 +431,18 @@ class PaymentController extends Controller
                 try {
                     $this->whatsappService->notifyAdminNewPaidOrder($order);
                 } catch (\Exception $e) {
-                    Log::warning('Failed to send WhatsApp notification', [
+                    Log::warning('Failed to send WhatsApp notification to admin', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue execution - don't fail the callback because of WhatsApp
+                }
+
+                // 3. Send WhatsApp Notification to Delivery
+                try {
+                    $this->whatsappService->notifyDeliveryNewPaidOrder($order);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send WhatsApp notification to delivery', [
                         'order_id' => $order->id,
                         'error' => $e->getMessage()
                     ]);

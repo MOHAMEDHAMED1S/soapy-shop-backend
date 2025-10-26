@@ -51,24 +51,24 @@ echo "  Order Items: " . $order->orderItems->count() . "\n\n";
 // Test WhatsApp Service
 $whatsappService = app(WhatsAppService::class);
 
-echo "📱 Sending WhatsApp notification...\n";
+echo "📱 [1/2] Sending WhatsApp notification to ADMIN...\n";
 echo "   To: " . env('ADMIN_WHATSAPP_PHONE', '201062532581') . "\n";
 echo "   API: " . env('WHATSAPP_API_URL', 'http://localhost:3000') . "\n";
 echo "   Image: https://soapy-bubbles.com/logo.png\n\n";
 
-$result = $whatsappService->notifyAdminNewPaidOrder($order);
+$adminResult = $whatsappService->notifyAdminNewPaidOrder($order);
 
-if ($result['success']) {
-    echo "✅ WhatsApp notification sent successfully!\n";
-    if (isset($result['data'])) {
-        echo "Response: " . json_encode($result['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
+if ($adminResult['success']) {
+    echo "✅ Admin WhatsApp notification sent successfully!\n";
+    if (isset($adminResult['data'])) {
+        echo "Response: " . json_encode($adminResult['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
     }
 } else {
-    echo "❌ Failed to send WhatsApp notification\n";
-    echo "Error: " . $result['error'] . "\n\n";
+    echo "❌ Failed to send Admin WhatsApp notification\n";
+    echo "Error: " . $adminResult['error'] . "\n\n";
     
     // Show what the message would look like
-    echo "📝 Preview of the message that was attempted:\n";
+    echo "📝 Preview of the ADMIN message that was attempted:\n";
     echo str_repeat("=", 60) . "\n";
     
     // Get the formatted message
@@ -79,17 +79,50 @@ if ($result['success']) {
     
     echo $messagePreview . "\n";
     echo str_repeat("=", 60) . "\n\n";
-    
-    echo "💡 Troubleshooting:\n";
-    echo "1. Make sure WhatsApp API server is running on: " . env('WHATSAPP_API_URL', 'http://localhost:3000') . "\n";
-    echo "2. Check your .env file has:\n";
-    echo "   WHATSAPP_API_URL=http://localhost:3000\n";
-    echo "   ADMIN_WHATSAPP_PHONE=201062532581\n";
-    echo "3. Test the API manually:\n";
-    echo "   curl -X POST " . env('WHATSAPP_API_URL') . "/api/send/image-url \\\n";
-    echo "     -H 'Content-Type: application/json' \\\n";
-    echo "     -d '{\"to\": \"201062532581\", \"imageUrl\": \"https://soapy-bubbles.com/logo.png\", \"caption\": \"Test\"}'\n";
 }
+
+echo "\n" . str_repeat("=", 70) . "\n\n";
+
+echo "📱 [2/2] Sending WhatsApp notification to DELIVERY...\n";
+echo "   To: " . env('DELIVERY_WHATSAPP_PHONE', '201062532581') . "\n";
+echo "   API: " . env('WHATSAPP_API_URL', 'http://localhost:3000') . "\n";
+echo "   Image: https://soapy-bubbles.com/logo.png\n\n";
+
+$deliveryResult = $whatsappService->notifyDeliveryNewPaidOrder($order);
+
+if ($deliveryResult['success']) {
+    echo "✅ Delivery WhatsApp notification sent successfully!\n";
+    if (isset($deliveryResult['data'])) {
+        echo "Response: " . json_encode($deliveryResult['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
+    }
+} else {
+    echo "❌ Failed to send Delivery WhatsApp notification\n";
+    echo "Error: " . $deliveryResult['error'] . "\n\n";
+    
+    // Show what the message would look like
+    echo "📝 Preview of the DELIVERY message that was attempted:\n";
+    echo str_repeat("=", 60) . "\n";
+    
+    // Get the formatted message
+    $reflection = new ReflectionClass($whatsappService);
+    $method = $reflection->getMethod('formatDeliveryMessage');
+    $method->setAccessible(true);
+    $messagePreview = $method->invoke($whatsappService, $order);
+    
+    echo $messagePreview . "\n";
+    echo str_repeat("=", 60) . "\n\n";
+}
+
+echo "\n💡 Troubleshooting:\n";
+echo "1. Make sure WhatsApp API server is running on: " . env('WHATSAPP_API_URL', 'http://localhost:3000') . "\n";
+echo "2. Check your .env file has:\n";
+echo "   WHATSAPP_API_URL=http://localhost:3000\n";
+echo "   ADMIN_WHATSAPP_PHONE=201062532581\n";
+echo "   DELIVERY_WHATSAPP_PHONE=201062532581\n";
+echo "3. Test the API manually:\n";
+echo "   curl -X POST " . env('WHATSAPP_API_URL') . "/api/send/image-url \\\n";
+echo "     -H 'Content-Type: application/json' \\\n";
+echo "     -d '{\"to\": \"201062532581\", \"imageUrl\": \"https://soapy-bubbles.com/logo.png\", \"caption\": \"Test\"}'\n";
 
 echo "\n=== Test Complete ===\n";
 

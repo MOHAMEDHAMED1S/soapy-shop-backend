@@ -10,11 +10,15 @@ class WhatsAppService
     protected $baseUrl;
     protected $adminPhone;
 
+    protected $deliveryPhone;
+
     public function __construct()
     {
         // يمكن تخزين هذه في .env لاحقاً
-        $this->baseUrl = env('WHATSAPP_API_URL', 'http://localhost:3000');
+        // Get from .env, if not found use default value
+        $this->baseUrl = env('WHATSAPP_API_URL', 'https://wapi.soapy-bubbles.com');
         $this->adminPhone = env('ADMIN_WHATSAPP_PHONE', '201062532581');
+        $this->deliveryPhone = env('DELIVERY_WHATSAPP_PHONE', '201062532581');
     }
 
     /**
@@ -123,7 +127,7 @@ class WhatsAppService
             }
 
             // Build message
-            $message = "*===== طلب جديد مدفوع =====*\n\n";
+            $message = "*====== طلب جديد مدفوع ======*\n\n";
             
             // Order Information
             $message .= "*معلومات الطلب:*\n";
@@ -145,7 +149,8 @@ class WhatsAppService
             // Shipping Address
             if ($order->shipping_address) {
                 $message .= "*عنوان الشحن:*\n";
-                $message .= "{$order->shipping_address}\n\n";
+                $address = $this->formatAddress($order->shipping_address);
+                $message .= "{$address}\n\n";
             }
             
             // Products
@@ -192,9 +197,8 @@ class WhatsAppService
                 }
             }
             
-            $message .= "\n" . str_repeat("=", 30);
-            $message .= "\n*رابط لوحة التحكم:*";
-            $message .= "\nلعرض تفاصيل الطلب الكاملة";
+            $message .= "\n" . str_repeat("=", 28);
+
 
             return $message;
             
@@ -211,6 +215,216 @@ class WhatsAppService
                    "العميل: {$order->customer_name}\n" .
                    "الهاتف: {$order->customer_phone}";
         }
+    }
+
+    /**
+     * إرسال رسالة واتساب مع صورة لمندوب التوصيل عند دفع طلب جديد
+     */
+    public function notifyDeliveryNewPaidOrder($order)
+    {
+        try {
+            // Ensure order items are loaded
+            if (!$order->relationLoaded('orderItems')) {
+                $order->load('orderItems');
+            }
+
+            Log::info('Attempting to send WhatsApp notification to delivery', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number
+            ]);
+
+            // تحضير رسالة مندوب التوصيل
+            $message = $this->formatDeliveryMessage($order);
+            $imageUrl = 'https://soapy-bubbles.com/logo.png';
+
+            // إرسال الواتساب
+            $response = Http::timeout(10)->post("{$this->baseUrl}/api/send/image-url", [
+                'to' => $this->deliveryPhone,
+                'imageUrl' => $imageUrl,
+                'caption' => $message,
+            ]);
+
+            if ($response->successful()) {
+                Log::info('WhatsApp notification sent successfully to delivery', [
+                    'order_id' => $order->id,
+                    'response' => $response->json()
+                ]);
+                return [
+                    'success' => true,
+                    'data' => $response->json()
+                ];
+            } else {
+                Log::warning('WhatsApp API returned error for delivery', [
+                    'order_id' => $order->id,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return [
+                    'success' => false,
+                    'error' => 'WhatsApp API error: ' . $response->status()
+                ];
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send WhatsApp notification to delivery', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * تنسيق رسالة مندوب التوصيل (أبسط وأكثر تركيزاً على التوصيل)
+     */
+    private function formatDeliveryMessage($order)
+    {
+        try {
+            $message = "*===== طلب جديد للتوصيل =====*\n\n";
+            
+            // معلومات الطلب الأساسية
+            $message .= "*رقم الطلب:* {$order->order_number}\n";
+            $message .= "*التاريخ:* " . $order->created_at->format('Y-m-d') . "\n";
+            $message .= "*الوقت:* " . $order->created_at->format('H:i:s') . "\n\n";
+            
+            // معلومات العميل
+            $message .= "*معلومات العميل:*\n";
+            $message .= "الاسم: {$order->customer_name}\n";
+            $message .= "الهاتف: {$order->customer_phone}\n\n";
+            
+            // عنوان التوصيل (مهم جداً للمندوب)
+            $message .= "*عنوان التوصيل:*\n";
+            if ($order->shipping_address) {
+                $address = $this->formatAddress($order->shipping_address);
+                $message .= "{$address}\n\n";
+            } else {
+                $message .= "(لم يتم تحديد العنوان)\n\n";
+            }
+            
+            // عدد القطع
+            $totalItems = 0;
+            if ($order->orderItems && $order->orderItems->count() > 0) {
+                foreach ($order->orderItems as $item) {
+                    $totalItems += $item->quantity ?? 1;
+                }
+                $message .= "*عدد القطع:* {$totalItems} قطعة\n\n";
+            }
+            
+            // المبلغ
+            $message .= "*المبلغ الإجمالي:* " . number_format($order->total_amount, 3) . " {$order->currency}\n";
+            $message .= "*حالة الدفع:* مدفوع مسبقاً\n\n";
+            
+            // ملاحظات إضافية (إذا وُجدت)
+            if (isset($order->notes) && $order->notes) {
+                $message .= "*ملاحظات:*\n{$order->notes}\n\n";
+            }
+            
+            $message .= str_repeat("=", 28);
+            $message .= "\n*يرجى التواصل مع العميل لتحديد موعد التوصيل*";
+
+            return $message;
+            
+        } catch (\Exception $e) {
+            Log::error('Error formatting delivery WhatsApp message', [
+                'order_id' => $order->id ?? 'unknown',
+                'error' => $e->getMessage()
+            ]);
+            
+            // Fallback simple message
+            $address = 'غير محدد';
+            try {
+                if ($order->shipping_address) {
+                    $address = $this->formatAddress($order->shipping_address);
+                }
+            } catch (\Exception $ex) {
+                // If formatting fails, keep it as 'غير محدد'
+            }
+            
+            return "*طلب جديد للتوصيل*\n\n" .
+                   "رقم الطلب: {$order->order_number}\n" .
+                   "العميل: {$order->customer_name}\n" .
+                   "الهاتف: {$order->customer_phone}\n" .
+                   "العنوان: {$address}";
+        }
+    }
+
+    /**
+     * تنسيق العنوان ليكون مقروءاً
+     */
+    private function formatAddress($address)
+    {
+        // If it's already a string, return it
+        if (is_string($address) && !$this->isJson($address)) {
+            return $address;
+        }
+
+        // If it's JSON string, decode it
+        if (is_string($address)) {
+            $address = json_decode($address, true);
+        }
+
+        // If it's an array, format it nicely
+        if (is_array($address)) {
+            $formatted = [];
+            
+            if (!empty($address['street'])) {
+                $formatted[] = "الشارع: {$address['street']}";
+            }
+            
+            if (!empty($address['city'])) {
+                $formatted[] = "المدينة: {$address['city']}";
+            }
+            
+            if (!empty($address['governorate'])) {
+                $formatted[] = "المحافظة: {$address['governorate']}";
+            }
+            
+            if (!empty($address['postal_code'])) {
+                $formatted[] = "الرمز البريدي: {$address['postal_code']}";
+            }
+            
+            if (!empty($address['block'])) {
+                $formatted[] = "القطعة: {$address['block']}";
+            }
+            
+            if (!empty($address['building'])) {
+                $formatted[] = "البناية: {$address['building']}";
+            }
+            
+            if (!empty($address['floor'])) {
+                $formatted[] = "الطابق: {$address['floor']}";
+            }
+            
+            if (!empty($address['apartment'])) {
+                $formatted[] = "الشقة: {$address['apartment']}";
+            }
+            
+            if (!empty($address['notes'])) {
+                $formatted[] = "ملاحظات: {$address['notes']}";
+            }
+            
+            return !empty($formatted) ? implode("\n", $formatted) : 'غير محدد';
+        }
+
+        return 'غير محدد';
+    }
+
+    /**
+     * التحقق من أن النص هو JSON
+     */
+    private function isJson($string)
+    {
+        if (!is_string($string)) {
+            return false;
+        }
+        
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 
     /**
