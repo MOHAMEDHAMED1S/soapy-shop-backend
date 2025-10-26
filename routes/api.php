@@ -243,7 +243,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     // Payments
     Route::get('/payments', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'index']);
     Route::get('/payments/statistics', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'statistics']);
-    Route::get('/payments/verify-pending', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'verifyPendingPayments']);
+    Route::get('/payments/verify-pendingg', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'verifyPendingPayments']);
     Route::get('/payments/{id}', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'show']);
     Route::post('/payments/{id}/retry', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'retryPayment']);
     Route::get('/webhook-logs', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'webhookLogs']);
