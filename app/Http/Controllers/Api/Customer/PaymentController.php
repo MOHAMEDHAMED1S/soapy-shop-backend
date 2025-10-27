@@ -367,41 +367,150 @@ class PaymentController extends Controller
                 return redirect()->away(config('app.frontend_url') . '/payment/failure?error=invoice_not_found');
             }
 
-            // Verify payment with MyFatoorah using stored invoice_reference
+            // ============================================================
+            // التحقق المزدوج: invoice_reference ثم paymentId
+            // ============================================================
+            
+            $invoiceData = null;
+            $verificationMethod = null;
+            
+            // المحاولة 1: التحقق من invoice_reference المخزن (الطريقة الأساسية)
+            Log::info('Attempting to verify payment using stored invoice_reference', [
+                'order_id' => $orderId,
+                'invoice_reference' => $invoiceReference
+            ]);
+            
             $paymentStatus = $this->paymentService->verifyPayment($invoiceReference);
             
             if (!$paymentStatus['success']) {
-                Log::error('Failed to verify payment with MyFatoorah', [
+                Log::error('Failed to verify payment with stored invoice_reference', [
                     'order_id' => $orderId,
                     'invoice_reference' => $invoiceReference,
                     'error' => $paymentStatus['error'] ?? 'Unknown error'
                 ]);
                 return redirect()->away(config('app.frontend_url') . '/payment/failure?error=verification_failed');
             }
-
+            
             $invoiceData = $paymentStatus['data'];
+            $invoiceStatus = $invoiceData['InvoiceStatus'] ?? 'unknown';
+            
+            // تحقق من حالة الدفع
+            if ($invoiceStatus === 'Paid') {
+                // ✅ الدفع ناجح باستخدام invoice_reference المخزن
+                $verificationMethod = 'stored_invoice_reference';
+                
+                Log::info('✅ Payment verified successfully using stored invoice_reference', [
+                    'order_id' => $orderId,
+                    'invoice_reference' => $invoiceReference,
+                    'invoice_status' => $invoiceStatus
+                ]);
+                
+            } else {
+                // ⚠️ الدفع المخزن ليس Paid → جرب paymentId من callback
+                Log::warning('Stored invoice_reference is not Paid, attempting fallback verification', [
+                    'order_id' => $orderId,
+                    'stored_invoice_reference' => $invoiceReference,
+                    'stored_status' => $invoiceStatus
+                ]);
+                
+                // المحاولة 2: التحقق باستخدام paymentId من callback (fallback)
+                $callbackPaymentId = $request->get('paymentId') ?? $request->get('Id');
+                
+                if ($callbackPaymentId) {
+                    Log::info('Attempting fallback verification using callback paymentId', [
+                        'order_id' => $orderId,
+                        'paymentId' => $callbackPaymentId
+                    ]);
+                    
+                    $fallbackStatus = $this->paymentService->verifyPaymentByPaymentId($callbackPaymentId);
+                    
+                    if ($fallbackStatus['success']) {
+                        $fallbackData = $fallbackStatus['data'];
+                        $fallbackInvoiceStatus = $fallbackData['InvoiceStatus'] ?? 'unknown';
+                        
+                        if ($fallbackInvoiceStatus === 'Paid') {
+                            // ✅ الدفع ناجح باستخدام paymentId من callback!
+                            $invoiceData = $fallbackData;
+                            $invoiceStatus = $fallbackInvoiceStatus;
+                            $verificationMethod = 'callback_paymentId';
+                            
+                            // تحديث invoice_reference المخزن للمستقبل
+                            $newInvoiceReference = $fallbackData['InvoiceId'] ?? $invoiceReference;
+                            if ($newInvoiceReference != $invoiceReference) {
+                                Log::info('Updating invoice_reference from callback verification', [
+                                    'old_invoice_reference' => $invoiceReference,
+                                    'new_invoice_reference' => $newInvoiceReference
+                                ]);
+                                $invoiceReference = $newInvoiceReference;
+                            }
+                            
+                            Log::info('✅ Payment verified successfully using callback paymentId (fallback)', [
+                                'order_id' => $orderId,
+                                'paymentId' => $callbackPaymentId,
+                                'invoice_reference' => $invoiceReference,
+                                'invoice_status' => $invoiceStatus
+                            ]);
+                            
+                        } else {
+                            // ❌ حتى paymentId من callback ليس مدفوع
+                            Log::error('Both verifications failed - payment not paid', [
+                                'order_id' => $orderId,
+                                'stored_invoice_reference' => $order->payment->invoice_reference,
+                                'stored_status' => $paymentStatus['data']['InvoiceStatus'] ?? 'unknown',
+                                'callback_paymentId' => $callbackPaymentId,
+                                'callback_status' => $fallbackInvoiceStatus
+                            ]);
+                            return redirect()->away(config('app.frontend_url') . '/payment/failure?error=verification_failed');
+                        }
+                    } else {
+                        // ❌ فشل التحقق من paymentId
+                        Log::error('Fallback verification with paymentId failed', [
+                            'order_id' => $orderId,
+                            'paymentId' => $callbackPaymentId,
+                            'error' => $fallbackStatus['error'] ?? 'Unknown error'
+                        ]);
+                        return redirect()->away(config('app.frontend_url') . '/payment/failure?error=verification_failed');
+                    }
+                } else {
+                    // ❌ لا يوجد paymentId في callback
+                    Log::error('No paymentId in callback for fallback verification', [
+                        'order_id' => $orderId,
+                        'stored_invoice_reference' => $invoiceReference,
+                        'stored_status' => $invoiceStatus
+                    ]);
+                    return redirect()->away(config('app.frontend_url') . '/payment/failure?error=verification_failed');
+                }
+            }
+            
+            // ============================================================
+            // الآن نحن متأكدون أن الدفع ناجح (Paid)
+            // ============================================================
             
             Log::info('Processing payment callback', [
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
                 'invoice_reference' => $invoiceReference,
-                'invoice_status' => $invoiceData['InvoiceStatus'] ?? 'unknown'
+                'invoice_status' => $invoiceStatus,
+                'verification_method' => $verificationMethod
             ]);
 
             DB::beginTransaction();
 
             // Update payment status
             $order->payment->update([
-                'status' => $invoiceData['InvoiceStatus'] ?? 'unknown',
+                'invoice_reference' => $invoiceReference, // تحديث إذا تغير
+                'status' => $invoiceStatus,
                 'response_raw' => array_merge(
                     $order->payment->response_raw ?? [],
-                    ['callback_response' => $invoiceData]
+                    [
+                        'callback_response' => $invoiceData,
+                        'verification_method' => $verificationMethod,
+                        'verified_at' => now()->toDateTimeString()
+                    ]
                 )
             ]);
 
-            // Update order status based on payment status
-            $invoiceStatus = $invoiceData['InvoiceStatus'] ?? 'unknown';
-            
+            // Update order status (نحن متأكدون أن الدفع Paid)
             if ($invoiceStatus === 'Paid') {
                 $order->update(['status' => 'paid']);
                 

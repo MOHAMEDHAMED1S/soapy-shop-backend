@@ -154,7 +154,7 @@ class PaymentService
     }
 
     /**
-     * Verify payment status with MyFatoorah
+     * Verify payment status with MyFatoorah using InvoiceId
      */
     public function verifyPayment($paymentId)
     {
@@ -178,6 +178,38 @@ class PaymentService
 
         } catch (\Exception $e) {
             Log::error('Payment verification error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Verify payment status with MyFatoorah using PaymentId (from callback)
+     */
+    public function verifyPaymentByPaymentId($paymentId)
+    {
+        try {
+            $response = $this->callMyFatoorahAPI('/v2/GetPaymentStatus', [
+                'Key' => $paymentId,
+                'KeyType' => 'PaymentId'
+            ]);
+
+            if ($response['success']) {
+                return [
+                    'success' => true,
+                    'data' => $response['data']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => $response['error']
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Payment verification by PaymentId error: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage()
