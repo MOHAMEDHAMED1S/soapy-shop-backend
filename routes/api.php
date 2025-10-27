@@ -90,6 +90,9 @@ Route::prefix('v1')->group(function () {
     // Shipping Cost (Public)
     Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
     
+    // Site Settings (Public)
+    Route::get('/site/orders-status', [\App\Http\Controllers\Api\SiteController::class, 'getOrdersStatus']);
+    
     // Analytics (Public)
     Route::get('/analytics/statistics', [\App\Http\Controllers\AnalyticsController::class, 'statistics']);
     Route::get('/analytics/general', [\App\Http\Controllers\AnalyticsController::class, 'statistics']); // Alias for general stats
@@ -500,6 +503,18 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
         Route::options('/toggle-admin', function () { return response('', 204); });
         Route::options('/toggle-delivery', function () { return response('', 204); });
         Route::options('/test', function () { return response('', 204); });
+    });
+    
+    // Site Settings Management (Admin)
+    Route::prefix('site')->group(function () {
+        Route::get('/orders-status', [\App\Http\Controllers\Api\Admin\SiteSettingController::class, 'getOrdersStatus']);
+        Route::post('/toggle-orders', [\App\Http\Controllers\Api\Admin\SiteSettingController::class, 'toggleOrders']);
+        Route::post('/set-orders-status', [\App\Http\Controllers\Api\Admin\SiteSettingController::class, 'setOrdersStatus']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/orders-status', function () { return response('', 204); });
+        Route::options('/toggle-orders', function () { return response('', 204); });
+        Route::options('/set-orders-status', function () { return response('', 204); });
     });
 });
 
