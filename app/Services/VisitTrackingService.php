@@ -317,11 +317,10 @@ class VisitTrackingService
 
         return [
             'total_visits' => Visit::dateRange($startDate, $endDate)->count(),
-            // حساب الزوار الفريدين بناءً على IP address الفريدة في الفترة
+            // حساب الزوار الفريدين بناءً على عدد IP addresses الفريدة
             'unique_visitors' => Visit::dateRange($startDate, $endDate)
-                ->select('ip_address')
-                ->distinct()
-                ->count(),
+                ->selectRaw('COUNT(DISTINCT ip_address) as count')
+                ->value('count') ?? 0,
             'visits_by_referer_type' => Visit::getVisitsByRefererType($startDate, $endDate),
             'top_referer_domains' => Visit::getTopRefererDomains(10, $startDate, $endDate),
             'daily_visits' => Visit::getDailyVisits($startDate, $endDate),

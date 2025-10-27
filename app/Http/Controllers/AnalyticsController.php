@@ -140,11 +140,10 @@ class AnalyticsController extends Controller
 
         $statistics = [
             'total_visits_24h' => Visit::dateRange($yesterday, $now)->count(),
-            // حساب الزوار الفريدين بناءً على IP address الفريدة
+            // حساب الزوار الفريدين بناءً على عدد IP addresses الفريدة
             'unique_visitors_24h' => Visit::dateRange($yesterday, $now)
-                ->select('ip_address')
-                ->distinct()
-                ->count(),
+                ->selectRaw('COUNT(DISTINCT ip_address) as count')
+                ->value('count') ?? 0,
             'visits_by_referer_type' => Visit::getVisitsByRefererType($yesterday, $now),
             'hourly_visits' => Visit::selectRaw('HOUR(visited_at) as hour, COUNT(*) as visits')
                 ->dateRange($yesterday, $now)
@@ -289,6 +288,7 @@ class AnalyticsController extends Controller
             })
             ->count();
             
+        // حساب الزوار الفريدين بشكل صحيح باستخدام COUNT(DISTINCT)
         $uniqueVisitors = Visit::dateRange($startDate, $endDate)
             ->where(function ($q) use ($platforms) {
                 foreach ($platforms as $platform) {
@@ -318,8 +318,8 @@ class AnalyticsController extends Controller
                     }
                 }
             })
-            ->distinct('ip_address')
-            ->count();
+            ->selectRaw('COUNT(DISTINCT ip_address) as count')
+            ->value('count') ?? 0;
 
         return response()->json([
             'success' => true,
