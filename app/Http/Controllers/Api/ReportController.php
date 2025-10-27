@@ -442,21 +442,21 @@ class ReportController extends Controller
             $revenueBreakdown = [
                 // الفترة المحددة
                 'period' => [
-                    'total_subtotal' => $periodRevenue->subtotal ?? 0,
-                    'total_tax' => $periodRevenue->tax ?? 0,
-                    'total_shipping' => $periodRevenue->shipping ?? 0,
-                    'total_discount' => $periodRevenue->discount ?? 0,
-                    'total_revenue' => $periodRevenue->total ?? 0,
-                    'total_orders' => $periodRevenue->orders_count ?? 0,
+                    'total_subtotal' => (float)($periodRevenue->subtotal ?? 0),
+                    'total_tax' => (float)($periodRevenue->tax ?? 0),
+                    'total_shipping' => (float)($periodRevenue->shipping ?? 0),
+                    'total_discount' => (float)($periodRevenue->discount ?? 0),
+                    'total_revenue' => (float)($periodRevenue->total ?? 0),
+                    'total_orders' => (int)($periodRevenue->orders_count ?? 0),
                 ],
                 // كل الوقت
                 'all_time' => [
-                    'total_subtotal' => $allTimeRevenue->subtotal ?? 0,
-                    'total_tax' => $allTimeRevenue->tax ?? 0,
-                    'total_shipping' => $allTimeRevenue->shipping ?? 0,
-                    'total_discount' => $allTimeRevenue->discount ?? 0,
-                    'total_revenue' => $allTimeRevenue->total ?? 0,
-                    'total_orders' => $allTimeRevenue->orders_count ?? 0,
+                    'total_subtotal' => (float)($allTimeRevenue->subtotal ?? 0),
+                    'total_tax' => (float)($allTimeRevenue->tax ?? 0),
+                    'total_shipping' => (float)($allTimeRevenue->shipping ?? 0),
+                    'total_discount' => (float)($allTimeRevenue->discount ?? 0),
+                    'total_revenue' => (float)($allTimeRevenue->total ?? 0),
+                    'total_orders' => (int)($allTimeRevenue->orders_count ?? 0),
                 ],
             ];
 
