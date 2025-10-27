@@ -23,11 +23,20 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         try {
-            // Add order counts and totals to the query
+            // Define paid order statuses
+            $paidStatuses = ['paid', 'shipped', 'delivered'];
+            
+            // Add order counts and totals to the query (only paid orders)
             $query = Customer::with(['latestOrder'])
-                ->withCount('orders as total_orders')
-                ->withSum('orders as calculated_total_spent', 'total_amount')
-                ->withAvg('orders as calculated_average_order_value', 'total_amount');
+                ->withCount(['orders as total_orders' => function($query) use ($paidStatuses) {
+                    $query->whereIn('status', $paidStatuses);
+                }])
+                ->withSum(['orders as calculated_total_spent' => function($query) use ($paidStatuses) {
+                    $query->whereIn('status', $paidStatuses);
+                }], 'total_amount')
+                ->withAvg(['orders as calculated_average_order_value' => function($query) use ($paidStatuses) {
+                    $query->whereIn('status', $paidStatuses);
+                }], 'total_amount');
 
             // Apply filters
             if ($request->has('search')) {

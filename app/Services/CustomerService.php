@@ -200,10 +200,18 @@ class CustomerService
      */
     public function getCustomerDetails(int $customerId): ?array
     {
+        $paidStatuses = ['paid', 'shipped', 'delivered'];
+        
         $customer = Customer::with(['orders.orderItems.product', 'latestOrder'])
-            ->withCount('orders as calculated_total_orders')
-            ->withSum('orders as calculated_total_spent', 'total_amount')
-            ->withAvg('orders as calculated_average_order_value', 'total_amount')
+            ->withCount(['orders as calculated_total_orders' => function($query) use ($paidStatuses) {
+                $query->whereIn('status', $paidStatuses);
+            }])
+            ->withSum(['orders as calculated_total_spent' => function($query) use ($paidStatuses) {
+                $query->whereIn('status', $paidStatuses);
+            }], 'total_amount')
+            ->withAvg(['orders as calculated_average_order_value' => function($query) use ($paidStatuses) {
+                $query->whereIn('status', $paidStatuses);
+            }], 'total_amount')
             ->find($customerId);
 
         if (!$customer) {
@@ -237,15 +245,23 @@ class CustomerService
      */
     public function searchCustomers(string $query, int $limit = 20): array
     {
+        $paidStatuses = ['paid', 'shipped', 'delivered'];
+        
         $customers = Customer::where(function ($q) use ($query) {
             $q->where('name', 'like', '%' . $query . '%')
               ->orWhere('phone', 'like', '%' . $query . '%')
               ->orWhere('email', 'like', '%' . $query . '%');
         })
         ->with(['latestOrder'])
-        ->withCount('orders as total_orders')
-        ->withSum('orders as calculated_total_spent', 'total_amount')
-        ->withAvg('orders as calculated_average_order_value', 'total_amount')
+        ->withCount(['orders as total_orders' => function($query) use ($paidStatuses) {
+            $query->whereIn('status', $paidStatuses);
+        }])
+        ->withSum(['orders as calculated_total_spent' => function($query) use ($paidStatuses) {
+            $query->whereIn('status', $paidStatuses);
+        }], 'total_amount')
+        ->withAvg(['orders as calculated_average_order_value' => function($query) use ($paidStatuses) {
+            $query->whereIn('status', $paidStatuses);
+        }], 'total_amount')
         ->orderBy('total_spent', 'desc')
         ->limit($limit)
         ->get()
