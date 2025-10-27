@@ -413,18 +413,52 @@ class ReportController extends Controller
 
             $paidStatuses = ['paid', 'shipped', 'delivered'];
 
-            // Revenue breakdown (فقط الطلبات المدفوعة)
-            $revenueBreakdown = Order::selectRaw('
-                SUM(subtotal_amount) as total_subtotal,
-                0 as total_tax,
-                SUM(shipping_amount) as total_shipping,
-                SUM(discount_amount) as total_discount,
-                SUM(total_amount) as total_revenue,
-                COUNT(*) as total_orders
+            // Revenue breakdown للفترة المحددة
+            $periodRevenue = Order::selectRaw('
+                SUM(subtotal_amount) as subtotal,
+                0 as tax,
+                SUM(shipping_amount) as shipping,
+                SUM(discount_amount) as discount,
+                SUM(total_amount) as total,
+                COUNT(*) as orders_count
             ')
             ->whereIn('status', $paidStatuses)
             ->whereBetween('created_at', [$dateFrom, $dateTo])
             ->first();
+
+            // Revenue breakdown لكل الوقت
+            $allTimeRevenue = Order::selectRaw('
+                SUM(subtotal_amount) as subtotal,
+                0 as tax,
+                SUM(shipping_amount) as shipping,
+                SUM(discount_amount) as discount,
+                SUM(total_amount) as total,
+                COUNT(*) as orders_count
+            ')
+            ->whereIn('status', $paidStatuses)
+            ->first();
+
+            // Combine both into revenue_breakdown
+            $revenueBreakdown = [
+                // الفترة المحددة
+                'period' => [
+                    'total_subtotal' => $periodRevenue->subtotal ?? 0,
+                    'total_tax' => $periodRevenue->tax ?? 0,
+                    'total_shipping' => $periodRevenue->shipping ?? 0,
+                    'total_discount' => $periodRevenue->discount ?? 0,
+                    'total_revenue' => $periodRevenue->total ?? 0,
+                    'total_orders' => $periodRevenue->orders_count ?? 0,
+                ],
+                // كل الوقت
+                'all_time' => [
+                    'total_subtotal' => $allTimeRevenue->subtotal ?? 0,
+                    'total_tax' => $allTimeRevenue->tax ?? 0,
+                    'total_shipping' => $allTimeRevenue->shipping ?? 0,
+                    'total_discount' => $allTimeRevenue->discount ?? 0,
+                    'total_revenue' => $allTimeRevenue->total ?? 0,
+                    'total_orders' => $allTimeRevenue->orders_count ?? 0,
+                ],
+            ];
 
             // Monthly revenue trend (فقط الطلبات المدفوعة)
             $monthlyRevenue = Order::selectRaw('
