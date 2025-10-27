@@ -112,7 +112,9 @@ class CustomerController extends Controller
                 'vip_customers' => Customer::vip()->count(),
                 'new_customers' => Customer::new()->count(),
                 'total_revenue' => \App\Models\Order::whereIn('status', $revenueStatuses)->sum('total_amount'),
-                'average_customer_value' => Customer::withSum('orders', 'total_amount')->get()->avg('orders_sum_total_amount') ?? 0,
+                'average_customer_value' => Customer::withSum(['orders as paid_orders_sum' => function($query) use ($revenueStatuses) {
+                    $query->whereIn('status', $revenueStatuses);
+                }], 'total_amount')->get()->avg('paid_orders_sum') ?? 0,
             ];
 
             return response()->json([
