@@ -140,7 +140,11 @@ class AnalyticsController extends Controller
 
         $statistics = [
             'total_visits_24h' => Visit::dateRange($yesterday, $now)->count(),
-            'unique_visitors_24h' => Visit::dateRange($yesterday, $now)->uniqueVisitors()->count(),
+            // حساب الزوار الفريدين بناءً على IP address الفريدة
+            'unique_visitors_24h' => Visit::dateRange($yesterday, $now)
+                ->select('ip_address')
+                ->distinct()
+                ->count(),
             'visits_by_referer_type' => Visit::getVisitsByRefererType($yesterday, $now),
             'hourly_visits' => Visit::selectRaw('HOUR(visited_at) as hour, COUNT(*) as visits')
                 ->dateRange($yesterday, $now)

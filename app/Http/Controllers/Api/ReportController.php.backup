@@ -35,9 +35,6 @@ class ReportController extends Controller
                 $dateFrom = $dateTo;
             }
 
-            // Define paid order statuses
-            $paidStatuses = ['paid', 'shipped', 'delivered'];
-
             $stats = [
                 // Products (not filtered by date as they are current inventory)
                 'total_products' => Product::count(),
@@ -56,7 +53,9 @@ class ReportController extends Controller
                 'new_customers' => Customer::whereBetween('created_at', [$dateFrom, $dateTo])->count(),
                 'active_customers' => Customer::whereHas('orders', function($query) use ($dateFrom, $dateTo) {
                     $query->whereBetween('created_at', [$dateFrom, $dateTo])
-                          ->whereIn('status', ['paid', 'shipped', 'delivered']);
+                          ->whereHas('payment', function($q) {
+                              $q->where('status', 'paid');
+                          });
                 })->count(),
                 
                 // Orders (filtered by date range)
@@ -65,19 +64,25 @@ class ReportController extends Controller
                     ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
                 'awaiting_payment_orders' => Order::where('status', 'awaiting_payment')
                     ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
-                'completed_orders' => Order::whereIn('status', $paidStatuses)
+                'completed_orders' => Order::whereHas('payment', function($query) {
+                        $query->where('status', 'paid');
+                    })
                     ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
                 'cancelled_orders' => Order::where('status', 'cancelled')
                     ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
                 
-                // Revenue
-                'total_revenue' => Order::whereIn('status', $paidStatuses)->sum('total_amount'),
-                'period_revenue' => Order::whereIn('status', $paidStatuses)
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])
-                    ->sum('total_amount'),
-                'average_order_value' => Order::whereIn('status', $paidStatuses)
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])
-                    ->avg('total_amount') ?? 0,
+                // Revenue (الشرط الأساسي: payment.status = 'paid')
+                'total_revenue' => Order::join('payments', 'orders.id', '=', 'payments.order_id')
+                    ->where('payments.status', 'paid')
+                    ->sum('orders.total_amount'),
+                'period_revenue' => Order::join('payments', 'orders.id', '=', 'payments.order_id')
+                    ->where('payments.status', 'paid')
+                    ->whereBetween('orders.created_at', [$dateFrom, $dateTo])
+                    ->sum('orders.total_amount'),
+                'average_order_value' => Order::join('payments', 'orders.id', '=', 'payments.order_id')
+                    ->where('payments.status', 'paid')
+                    ->whereBetween('orders.created_at', [$dateFrom, $dateTo])
+                    ->avg('orders.total_amount') ?? 0,
                 
                 // Add date range info for clarity
                 'date_range' => [
@@ -130,19 +135,18 @@ class ReportController extends Controller
             $salesByCategory = $this->getSalesByCategory($dateFrom, $dateTo);
             
             // Payment methods distribution
-            $paidStatuses = ['paid', 'shipped', 'delivered'];
-            $paymentMethods = Order::select('payments.payment_method')
+            $paymentMethods = Order::select('payments.payment_method as method')
                 ->selectRaw('COUNT(*) as count')
                 ->selectRaw('SUM(orders.total_amount) as total_amount')
                 ->join('payments', 'orders.id', '=', 'payments.order_id')
-                ->whereIn('orders.status', $paidStatuses)
+                ->where('payments.status', 'paid')
                 ->whereBetween('orders.created_at', [$dateFrom, $dateTo])
                 ->whereNotNull('payments.payment_method')
                 ->groupBy('payments.payment_method')
                 ->get()
                 ->map(function($item) {
                     return [
-                        'method' => $item->payment_method ?? 'unknown',
+                        'method' => $item->method ?? 'unknown',
                         'count' => $item->count,
                         'total_amount' => (float) $item->total_amount
                     ];
@@ -195,22 +199,25 @@ class ReportController extends Controller
                 ->orderBy('date')
                 ->get();
 
-            // Top customers by orders (فقط الطلبات المدفوعة)
-            $topCustomersByOrders = Customer::withCount(['orders' => function($query) use ($dateFrom, $dateTo, $paidStatuses) {
+            // Top customers by orders (فقط الطلبات المدفوعة فعلياً)
+            $topCustomersByOrders = Customer::withCount(['orders' => function($query) use ($dateFrom, $dateTo) {
                 $query->whereBetween('created_at', [$dateFrom, $dateTo])
-                      ->whereIn('status', $paidStatuses);
+                      ->whereHas('payment', function($q) {
+                          $q->where('status', 'paid');
+                      });
             }])
                 ->having('orders_count', '>', 0)
                 ->orderBy('orders_count', 'desc')
                 ->limit(10)
                 ->get();
 
-            // Top customers by revenue (فقط الطلبات المدفوعة)
+            // Top customers by revenue (فقط الطلبات المدفوعة فعلياً)
             $topCustomersByRevenue = Customer::select('customers.id', 'customers.name', 'customers.email', 'customers.phone')
                 ->selectRaw('SUM(orders.total_amount) as total_spent')
                 ->selectRaw('COUNT(orders.id) as orders_count')
                 ->join('orders', 'customers.id', '=', 'orders.customer_id')
-                ->whereIn('orders.status', $paidStatuses)
+                ->join('payments', 'orders.id', '=', 'payments.order_id')
+                ->where('payments.status', 'paid')
                 ->whereBetween('orders.created_at', [$dateFrom, $dateTo])
                 ->groupBy('customers.id', 'customers.name', 'customers.email', 'customers.phone')
                 ->orderBy('total_spent', 'desc')

@@ -317,7 +317,11 @@ class VisitTrackingService
 
         return [
             'total_visits' => Visit::dateRange($startDate, $endDate)->count(),
-            'unique_visitors' => Visit::dateRange($startDate, $endDate)->uniqueVisitors()->count(),
+            // حساب الزوار الفريدين بناءً على IP address الفريدة في الفترة
+            'unique_visitors' => Visit::dateRange($startDate, $endDate)
+                ->select('ip_address')
+                ->distinct()
+                ->count(),
             'visits_by_referer_type' => Visit::getVisitsByRefererType($startDate, $endDate),
             'top_referer_domains' => Visit::getTopRefererDomains(10, $startDate, $endDate),
             'daily_visits' => Visit::getDailyVisits($startDate, $endDate),
