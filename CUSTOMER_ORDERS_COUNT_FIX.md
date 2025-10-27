@@ -48,7 +48,8 @@ $query = Customer::with(['latestOrder'])
 ### 1. CustomerController.php
 
 **الملف:** `app/Http/Controllers/Api/Admin/CustomerController.php`  
-**Method:** `index()`  
+
+#### Method: `index()` - Query للعملاء
 **السطور:** 27-39
 
 **قبل:**
@@ -73,6 +74,23 @@ $query = Customer::with(['latestOrder'])
     ->withAvg(['orders as calculated_average_order_value' => function($query) use ($paidStatuses) {
         $query->whereIn('status', $paidStatuses);
     }], 'total_amount');
+```
+
+#### Method: `index()` - Summary Statistics
+**السطور:** 115-117
+
+**قبل:**
+```php
+'average_customer_value' => Customer::withSum('orders', 'total_amount')
+    ->get()
+    ->avg('orders_sum_total_amount') ?? 0,
+```
+
+**بعد:**
+```php
+'average_customer_value' => Customer::withSum(['orders as paid_orders_sum' => function($query) use ($revenueStatuses) {
+    $query->whereIn('status', $revenueStatuses);
+}], 'total_amount')->get()->avg('paid_orders_sum') ?? 0,
 ```
 
 ---
@@ -171,6 +189,20 @@ $paidStatuses = ['paid', 'shipped', 'delivered'];
 }
 ```
 
+### Summary Statistics:
+
+**قبل الإصلاح:**
+```
+average_customer_value = 995.175 د.ك  // ❌ من كل الطلبات (29 طلب)
+```
+
+**بعد الإصلاح:**
+```
+average_customer_value = 471.000 د.ك  // ✅ من الطلبات المدفوعة فقط (14 طلب)
+```
+
+**الفرق:** 524.175 د.ك (الطلبات غير المدفوعة)
+
 ---
 
 ## 📝 APIs المتأثرة
@@ -205,7 +237,7 @@ GET /api/v1/admin/customers?page=1&per_page=15
       "vip_customers": 25,
       "new_customers": 10,
       "total_revenue": 45000.000,
-      "average_customer_value": 300.000
+      "average_customer_value": 300.000    // ✅ من الطلبات المدفوعة فقط
     }
   }
 }
@@ -393,8 +425,9 @@ curl -X GET "http://localhost:8000/api/v1/admin/customers?per_page=5" \
 1. ✅ `total_orders` الآن يحسب **الطلبات المدفوعة فقط** (paid, shipped, delivered)
 2. ✅ `total_spent` يحسب **مجموع الطلبات المدفوعة فقط**
 3. ✅ `average_order_value` يحسب **متوسط الطلبات المدفوعة فقط**
-4. ✅ الحسابات ديناميكية ودقيقة
-5. ✅ تم تطبيق الإصلاح على جميع APIs
+4. ✅ **Summary: `average_customer_value`** يحسب من **الطلبات المدفوعة فقط**
+5. ✅ الحسابات ديناميكية ودقيقة
+6. ✅ تم تطبيق الإصلاح على جميع APIs
 
 ### APIs المتأثرة:
 

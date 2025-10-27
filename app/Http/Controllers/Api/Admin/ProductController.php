@@ -431,8 +431,9 @@ class ProductController extends Controller
             $validator = Validator::make($request->all(), [
                 'product_ids' => 'required|array|min:1',
                 'product_ids.*' => 'exists:products,id',
-                'action' => 'required|in:activate,deactivate,delete,change_category',
-                'category_id' => 'required_if:action,change_category|exists:categories,id',
+                'action' => 'required|in:activate,deactivate,delete,change_category,update_category,update_price',
+                'category_id' => 'required_if:action,change_category,update_category|exists:categories,id',
+                'price' => 'required_if:action,update_price|numeric|min:0',
             ]);
 
             if ($validator->fails()) {
@@ -464,8 +465,14 @@ class ProductController extends Controller
                         break;
                     
                     case 'change_category':
+                    case 'update_category':
                         $updatedCount = Product::whereIn('id', $productIds)
                             ->update(['category_id' => $request->category_id]);
+                        break;
+                    
+                    case 'update_price':
+                        $updatedCount = Product::whereIn('id', $productIds)
+                            ->update(['price' => $request->price]);
                         break;
                 }
             });
