@@ -480,6 +480,27 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
         Route::options('/active', function () { return response('', 204); });
         Route::options('/update', function () { return response('', 204); });
     });
+    
+    // WhatsApp Settings Management (Admin)
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'index']);
+        Route::get('/{key}', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'show']);
+        Route::put('/{key}', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'update']);
+        Route::post('/bulk-update', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'bulkUpdate']);
+        Route::post('/toggle-global', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'toggleGlobal']);
+        Route::post('/toggle-admin', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'toggleAdminNotifications']);
+        Route::post('/toggle-delivery', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'toggleDeliveryNotifications']);
+        Route::post('/test', [\App\Http\Controllers\Api\Admin\WhatsAppController::class, 'test']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/', function () { return response('', 204); });
+        Route::options('/{key}', function () { return response('', 204); });
+        Route::options('/bulk-update', function () { return response('', 204); });
+        Route::options('/toggle-global', function () { return response('', 204); });
+        Route::options('/toggle-admin', function () { return response('', 204); });
+        Route::options('/toggle-delivery', function () { return response('', 204); });
+        Route::options('/test', function () { return response('', 204); });
+    });
 });
 
 // Admin Auth (Public)

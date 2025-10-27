@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Services\PaymentService;
 use App\Services\NotificationService;
 use App\Services\WhatsAppService;
+use App\Helpers\AsyncHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -523,43 +524,67 @@ class PaymentController extends Controller
 
             DB::commit();
             
-            // Send notifications after commit (don't let notification failures stop the process)
+            // جدولة الإشعارات للتنفيذ في الخلفية بعد إرسال الاستجابة
+            // هذا يضمن عدم تأثير بطء أو فشل الإشعارات على سرعة callback
             if ($invoiceStatus === 'Paid') {
-                // 1. Send Email Notification
-                try {
-                    $this->notificationService->createOrderNotification($order, 'order_paid');
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send order notification email', [
-                        'order_id' => $order->id,
-                        'error' => $e->getMessage()
-                    ]);
-                    // Continue execution - don't fail the callback because of email
-                }
-
-                // 2. Send WhatsApp Notification to Admin
-                try {
-                    $this->whatsappService->notifyAdminNewPaidOrder($order);
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send WhatsApp notification to admin', [
-                        'order_id' => $order->id,
-                        'error' => $e->getMessage()
-                    ]);
-                    // Continue execution - don't fail the callback because of WhatsApp
-                }
-
-                // 3. Send WhatsApp Notification to Delivery
-                try {
-                    $this->whatsappService->notifyDeliveryNewPaidOrder($order);
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send WhatsApp notification to delivery', [
-                        'order_id' => $order->id,
-                        'error' => $e->getMessage()
-                    ]);
-                    // Continue execution - don't fail the callback because of WhatsApp
-                }
+                $notificationService = $this->notificationService;
+                $whatsappService = $this->whatsappService;
+                $orderId = $order->id;
+                
+                // جدولة المهام للتنفيذ بعد إرسال الاستجابة
+                AsyncHelper::runMultipleTasks([
+                    'email_notification' => function () use ($notificationService, $orderId) {
+                        try {
+                            // إعادة تحميل الطلب لتجنب مشاكل الـ serialization
+                            $order = Order::find($orderId);
+                            if ($order) {
+                                $notificationService->createOrderNotification($order, 'order_paid');
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning('Background email notification failed', [
+                                'order_id' => $orderId,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
+                    },
+                    
+                    'whatsapp_admin' => function () use ($whatsappService, $orderId) {
+                        try {
+                            // إعادة تحميل الطلب لتجنب مشاكل الـ serialization
+                            $order = Order::with('orderItems')->find($orderId);
+                            if ($order) {
+                                $whatsappService->notifyAdminNewPaidOrder($order);
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning('Background WhatsApp admin notification failed', [
+                                'order_id' => $orderId,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
+                    },
+                    
+                    'whatsapp_delivery' => function () use ($whatsappService, $orderId) {
+                        try {
+                            // إعادة تحميل الطلب لتجنب مشاكل الـ serialization
+                            $order = Order::with('orderItems')->find($orderId);
+                            if ($order) {
+                                $whatsappService->notifyDeliveryNewPaidOrder($order);
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning('Background WhatsApp delivery notification failed', [
+                                'order_id' => $orderId,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
+                    }
+                ]);
+                
+                Log::info('Payment callback: Notifications scheduled for background execution', [
+                    'order_id' => $orderId
+                ]);
             }
 
-            // Redirect to frontend success page
+            // إرسال الاستجابة فوراً (الإشعارات ستنفذ في الخلفية)
             return redirect()->away(config('app.frontend_url') . '/payment/success?order=' . $order->order_number . '&status=' . $invoiceStatus);
 
         } catch (\Exception $e) {
