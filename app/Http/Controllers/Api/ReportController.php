@@ -442,21 +442,21 @@ class ReportController extends Controller
             $revenueBreakdown = [
                 // الفترة المحددة
                 'period' => [
-                    'total_subtotal' => (float)($periodRevenue->subtotal ?? 0),
-                    'total_tax' => (float)($periodRevenue->tax ?? 0),
-                    'total_shipping' => (float)($periodRevenue->shipping ?? 0),
-                    'total_discount' => (float)($periodRevenue->discount ?? 0),
-                    'total_revenue' => (float)($periodRevenue->total ?? 0),
-                    'total_orders' => (int)($periodRevenue->orders_count ?? 0),
+                    'total_subtotal' => round(floatval($periodRevenue->subtotal ?? 0), 3),
+                    'total_tax' => round(floatval($periodRevenue->tax ?? 0), 3),
+                    'total_shipping' => round(floatval($periodRevenue->shipping ?? 0), 3),
+                    'total_discount' => round(floatval($periodRevenue->discount ?? 0), 3),
+                    'total_revenue' => round(floatval($periodRevenue->total ?? 0), 3),
+                    'total_orders' => intval($periodRevenue->orders_count ?? 0),
                 ],
                 // كل الوقت
                 'all_time' => [
-                    'total_subtotal' => (float)($allTimeRevenue->subtotal ?? 0),
-                    'total_tax' => (float)($allTimeRevenue->tax ?? 0),
-                    'total_shipping' => (float)($allTimeRevenue->shipping ?? 0),
-                    'total_discount' => (float)($allTimeRevenue->discount ?? 0),
-                    'total_revenue' => (float)($allTimeRevenue->total ?? 0),
-                    'total_orders' => (int)($allTimeRevenue->orders_count ?? 0),
+                    'total_subtotal' => round(floatval($allTimeRevenue->subtotal ?? 0), 3),
+                    'total_tax' => round(floatval($allTimeRevenue->tax ?? 0), 3),
+                    'total_shipping' => round(floatval($allTimeRevenue->shipping ?? 0), 3),
+                    'total_discount' => round(floatval($allTimeRevenue->discount ?? 0), 3),
+                    'total_revenue' => round(floatval($allTimeRevenue->total ?? 0), 3),
+                    'total_orders' => intval($allTimeRevenue->orders_count ?? 0),
                 ],
             ];
 
