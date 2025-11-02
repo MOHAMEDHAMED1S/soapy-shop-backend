@@ -191,6 +191,18 @@ class PaymentService
     public function verifyPaymentByPaymentId($paymentId)
     {
         try {
+            // First check if this PaymentId has already been used
+            if ($this->isPaymentIdUsed($paymentId)) {
+                Log::warning('Attempted to verify already used PaymentId', [
+                    'payment_id' => $paymentId
+                ]);
+                
+                return [
+                    'success' => false,
+                    'error' => 'PaymentId has already been used'
+                ];
+            }
+
             $response = $this->callMyFatoorahAPI('/v2/GetPaymentStatus', [
                 'Key' => $paymentId,
                 'KeyType' => 'PaymentId'
@@ -367,6 +379,20 @@ class PaymentService
     }
 
     /**
+     * Check if payment_id has been used before
+     */
+    public function isPaymentIdUsed($paymentId)
+    {
+        if (empty($paymentId)) {
+            return false;
+        }
+
+        return Payment::where('payment_id', $paymentId)
+            ->where('status', 'paid')
+            ->exists();
+    }
+
+    /**
      * Verify webhook signature
      */
     public function verifyWebhookSignature($request)
@@ -382,6 +408,19 @@ class PaymentService
     public function processWebhook($data)
     {
         try {
+            // Check if PaymentId has been used before (security check)
+            if (isset($data['PaymentId']) && $this->isPaymentIdUsed($data['PaymentId'])) {
+                Log::warning('Attempted to reuse PaymentId', [
+                    'payment_id' => $data['PaymentId'],
+                    'invoice_id' => $data['InvoiceId'] ?? 'unknown'
+                ]);
+                
+                return [
+                    'success' => false,
+                    'error' => 'PaymentId has already been used'
+                ];
+            }
+
             // Find payment by invoice reference
             $payment = Payment::where('invoice_reference', $data['InvoiceId'] ?? '')
                 ->with('order')
@@ -394,14 +433,21 @@ class PaymentService
                 ];
             }
 
-            // Update payment status
-            $payment->update([
+            // Update payment status and store PaymentId
+            $updateData = [
                 'status' => $data['InvoiceStatus'] ?? 'unknown',
                 'response_raw' => array_merge(
                     $payment->response_raw,
                     ['webhook_data' => $data]
                 )
-            ]);
+            ];
+
+            // Store PaymentId if provided and payment is successful
+            if (isset($data['PaymentId']) && $data['InvoiceStatus'] === 'Paid') {
+                $updateData['payment_id'] = $data['PaymentId'];
+            }
+
+            $payment->update($updateData);
 
             // Update order status
             $order = $payment->order;

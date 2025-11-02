@@ -12,6 +12,7 @@ class Payment extends Model
         'provider',
         'payment_method',
         'invoice_reference',
+        'payment_id', // MyFatoorah PaymentId for duplicate prevention
         'amount',
         'currency',
         'status',

@@ -238,6 +238,22 @@ class PaymentController extends Controller
                 ], 404);
             }
 
+            // Security check: Verify if paymentId has been used before
+            if ($this->paymentService->isPaymentIdUsed($request->paymentId)) {
+                Log::warning('Attempted reuse of paymentId in callback', [
+                    'payment_id' => $request->paymentId,
+                    'order_id' => $request->order_id,
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment ID has already been used',
+                    'error' => 'PAYMENT_ID_ALREADY_USED'
+                ], 400);
+            }
+
             // Verify payment with MyFatoorah
             $paymentStatus = $this->paymentService->verifyPayment($request->paymentId);
 
@@ -251,9 +267,10 @@ class PaymentController extends Controller
 
             DB::beginTransaction();
 
-            // Update payment status
+            // Update payment status and store payment_id
             $order->payment->update([
                 'status' => $paymentStatus['data']['InvoiceStatus'],
+                'payment_id' => $request->paymentId, // Store MyFatoorah PaymentId for duplicate prevention
                 'response_raw' => array_merge(
                     $order->payment->response_raw,
                     ['verification_response' => $paymentStatus['data']]
@@ -395,6 +412,21 @@ class PaymentController extends Controller
             $invoiceData = $paymentStatus['data'];
             $invoiceStatus = $invoiceData['InvoiceStatus'] ?? 'unknown';
             
+            // Get paymentId from callback for security check and storage
+            $callbackPaymentId = $request->get('paymentId') ?? $request->get('Id');
+            
+            // Security check: Always verify if paymentId has been used before (if provided)
+            if ($callbackPaymentId && $this->paymentService->isPaymentIdUsed($callbackPaymentId)) {
+                Log::warning('Attempted reuse of paymentId in success callback', [
+                    'payment_id' => $callbackPaymentId,
+                    'order_id' => $orderId,
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent()
+                ]);
+                
+                return redirect()->away(config('app.frontend_url') . '/payment/failure?error=payment_id_already_used');
+            }
+            
             // تحقق من حالة الدفع
             if ($invoiceStatus === 'Paid') {
                 // ✅ الدفع ناجح باستخدام invoice_reference المخزن
@@ -403,7 +435,8 @@ class PaymentController extends Controller
                 Log::info('✅ Payment verified successfully using stored invoice_reference', [
                     'order_id' => $orderId,
                     'invoice_reference' => $invoiceReference,
-                    'invoice_status' => $invoiceStatus
+                    'invoice_status' => $invoiceStatus,
+                    'callback_payment_id' => $callbackPaymentId
                 ]);
                 
             } else {
@@ -415,9 +448,10 @@ class PaymentController extends Controller
                 ]);
                 
                 // المحاولة 2: التحقق باستخدام paymentId من callback (fallback)
-                $callbackPaymentId = $request->get('paymentId') ?? $request->get('Id');
                 
                 if ($callbackPaymentId) {
+                    // Note: Security check already done above for all cases
+                    
                     Log::info('Attempting fallback verification using callback paymentId', [
                         'order_id' => $orderId,
                         'paymentId' => $callbackPaymentId
@@ -496,37 +530,51 @@ class PaymentController extends Controller
             ]);
 
             DB::beginTransaction();
-
-            // Update payment status
-            $order->payment->update([
-                'invoice_reference' => $invoiceReference, // تحديث إذا تغير
-                'status' => $invoiceStatus,
-                'response_raw' => array_merge(
-                    $order->payment->response_raw ?? [],
-                    [
-                        'callback_response' => $invoiceData,
-                        'verification_method' => $verificationMethod,
-                        'verified_at' => now()->toDateTimeString()
-                    ]
-                )
-            ]);
-
-            // Update order status (نحن متأكدون أن الدفع Paid)
-            if ($invoiceStatus === 'Paid') {
-                $order->update(['status' => 'paid']);
-                
-                // Deduct inventory for order items
-                $order->load('orderItems.product');
-                $order->deductInventory();
-            } elseif ($invoiceStatus === 'Failed') {
-                $order->update(['status' => 'pending']);
-            }
-
-            DB::commit();
             
-            // جدولة الإشعارات للتنفيذ في الخلفية بعد إرسال الاستجابة
-            // هذا يضمن عدم تأثير بطء أو فشل الإشعارات على سرعة callback
-            if ($invoiceStatus === 'Paid') {
+            try {
+                // Update payment status - Always store payment_id if available
+                $paymentUpdateData = [
+                    'invoice_reference' => $invoiceReference, // تحديث إذا تغير
+                    'status' => $invoiceStatus,
+                    'response_raw' => array_merge(
+                        $order->payment->response_raw ?? [],
+                        [
+                            'callback_response' => $invoiceData,
+                            'verification_method' => $verificationMethod,
+                            'verified_at' => now()->toDateTimeString()
+                        ]
+                    )
+                ];
+                
+                // Always store payment_id if provided (for duplicate prevention)
+                if ($callbackPaymentId) {
+                    $paymentUpdateData['payment_id'] = $callbackPaymentId;
+                    
+                    Log::info('Storing payment_id for duplicate prevention', [
+                        'order_id' => $orderId,
+                        'payment_id' => $callbackPaymentId,
+                        'verification_method' => $verificationMethod
+                    ]);
+                }
+                
+                $order->payment->update($paymentUpdateData);
+
+                // Update order status (نحن متأكدون أن الدفع Paid)
+                if ($invoiceStatus === 'Paid') {
+                    $order->update(['status' => 'paid']);
+                    
+                    // Deduct inventory for order items
+                    $order->load('orderItems.product');
+                    $order->deductInventory();
+                } elseif ($invoiceStatus === 'Failed') {
+                    $order->update(['status' => 'pending']);
+                }
+
+                DB::commit();
+                
+                // جدولة الإشعارات للتنفيذ في الخلفية بعد إرسال الاستجابة
+                // هذا يضمن عدم تأثير بطء أو فشل الإشعارات على سرعة callback
+                if ($invoiceStatus === 'Paid') {
                 $notificationService = $this->notificationService;
                 $whatsappService = $this->whatsappService;
                 $orderId = $order->id;
@@ -584,8 +632,20 @@ class PaymentController extends Controller
                 ]);
             }
 
-            // إرسال الاستجابة فوراً (الإشعارات ستنفذ في الخلفية)
-            return redirect()->away(config('app.frontend_url') . '/payment/success?order=' . $order->order_number . '&status=' . $invoiceStatus);
+                 // إرسال الاستجابة فوراً (الإشعارات ستنفذ في الخلفية)
+                 return redirect()->away(config('app.frontend_url') . '/payment/success?order=' . $order->order_number . '&status=' . $invoiceStatus);
+                 
+             } catch (\Exception $e) {
+                 DB::rollBack();
+                 Log::error('Payment success callback database error', [
+                     'message' => $e->getMessage(),
+                     'file' => $e->getFile(),
+                     'line' => $e->getLine(),
+                     'order_id' => $orderId,
+                     'payment_id' => $callbackPaymentId ?? null
+                 ]);
+                 return redirect()->away(config('app.frontend_url') . '/payment/failure?error=database_error');
+             }
 
         } catch (\Exception $e) {
             DB::rollBack();
