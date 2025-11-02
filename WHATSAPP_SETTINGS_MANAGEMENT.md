@@ -412,7 +412,7 @@ const WhatsAppSettings = () => {
         },
         body: JSON.stringify({
           phone,
-          message: 'This is a test message from Soapy Shop',
+          message: 'This is a test message from soapy bubbles',
         }),
       });
       const data = await response.json();
@@ -641,7 +641,7 @@ const testConnection = async () => {
       },
       body: JSON.stringify({
         phone: testPhone.value,
-        message: 'This is a test message from Soapy Shop',
+        message: 'This is a test message from soapy bubbles',
       }),
     });
     const data = await response.json();

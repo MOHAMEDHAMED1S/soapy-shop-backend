@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إشعار إداري - Soapy Shop</title>
+    <title>إشعار إداري - soapy bubbles</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -117,7 +117,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🧴 Soapy Shop</div>
+            <div class="logo">🧴 soapy bubbles</div>
             <div class="priority {{ $priority }}">{{ $priority }}</div>
         </div>
 
@@ -190,7 +190,7 @@
 
         <div class="footer">
             <p>تم إرسال هذا الإشعار في: {{ $createdAt }}</p>
-            <p>Soapy Shop - متجر الصابون الطبيعي</p>
+            <p>soapy bubbles - متجر الصابون الطبيعي</p>
             <p>هذا إشعار تلقائي، يرجى عدم الرد على هذا البريد الإلكتروني.</p>
         </div>
     </div>

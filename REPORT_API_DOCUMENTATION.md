@@ -1,7 +1,7 @@
 # Report API Documentation
 
 ## Overview
-The Report API provides comprehensive analytics and business intelligence for the Soapy Shop e-commerce platform. These endpoints offer insights into sales performance, customer behavior, product analytics, order patterns, and financial metrics.
+The Report API provides comprehensive analytics and business intelligence for the soapy bubbles e-commerce platform. These endpoints offer insights into sales performance, customer behavior, product analytics, order patterns, and financial metrics.
 
 ## Base URL
 ```

@@ -25,7 +25,7 @@ return [
             'enabled' => env('NOTIFICATION_EMAIL_ENABLED', true),
             'admin_email' => env('NOTIFICATION_ADMIN_EMAIL', 'admin@soapyshop.com'),
             'from_email' => env('NOTIFICATION_FROM_EMAIL', 'noreply@soapyshop.com'),
-            'from_name' => env('NOTIFICATION_FROM_NAME', 'Soapy Shop'),
+            'from_name' => env('NOTIFICATION_FROM_NAME', 'soapy bubbles'),
         ],
         'push' => [
             'enabled' => env('NOTIFICATION_PUSH_ENABLED', true),
@@ -191,7 +191,7 @@ return [
             'sound' => 'default',
         ],
         'sms' => [
-            'template' => '[Soapy Shop] {title}: {message}',
+            'template' => '[soapy bubbles] {title}: {message}',
             'max_length' => 160,
         ],
     ],

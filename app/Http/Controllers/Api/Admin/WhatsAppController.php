@@ -337,7 +337,7 @@ class WhatsAppController extends Controller
             $whatsappService = app(\App\Services\WhatsAppService::class);
             $baseUrl = WhatsAppSetting::getBaseUrl();
             $phone = $request->phone;
-            $message = $request->message ?? "This is a test message from Soapy Shop";
+            $message = $request->message ?? "This is a test message from soapy bubbles";
 
             // استخدام asForm() لإرسال البيانات كـ form-data
             $response = \Illuminate\Support\Facades\Http::timeout(10)

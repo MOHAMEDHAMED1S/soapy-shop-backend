@@ -1,7 +1,7 @@
-# Soapy Shop API - Practical Examples & Use Cases
+# soapy bubbles API - Practical Examples & Use Cases
 
 ## Overview
-This document provides practical examples and real-world use cases for the Soapy Shop API endpoints, including both Export and Report APIs.
+This document provides practical examples and real-world use cases for the soapy bubbles API endpoints, including both Export and Report APIs.
 
 ## Table of Contents
 1. [Authentication Setup](#authentication-setup)
@@ -261,7 +261,7 @@ Sync product data with external e-commerce platforms.
 #!/bin/bash
 # sync_products_to_shopify.sh
 
-# Export products from Soapy Shop
+# Export products from soapy bubbles
 curl -X POST "$SOAPY_API_BASE/exports/products" \
   -H "Authorization: Bearer $SOAPY_TOKEN" \
   -H "Content-Type: application/json" \
@@ -298,7 +298,7 @@ jq -c '.[]' products.json | while read product; do
     product: {
       title: .name,
       body_html: .description,
-      vendor: "Soapy Shop",
+      vendor: "soapy bubbles",
       product_type: .category,
       variants: [{
         price: .price,
@@ -992,4 +992,4 @@ dashboard_data = client.get_report_cached("dashboard/overview", cache_ttl=30)
 sales_data = client.get_report_cached("analytics/sales", {"period": "week"}, cache_ttl=60)
 ```
 
-This comprehensive guide provides practical examples for integrating with the Soapy Shop API, handling errors gracefully, and optimizing performance for production use cases.
+This comprehensive guide provides practical examples for integrating with the soapy bubbles API, handling errors gracefully, and optimizing performance for production use cases.

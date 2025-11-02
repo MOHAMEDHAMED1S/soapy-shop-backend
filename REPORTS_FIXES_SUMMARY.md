@@ -1,7 +1,7 @@
 # Reports System Fixes - Complete Summary
 
 ## Project Overview
-This document summarizes all the fixes and improvements made to the Reports API system in the Soapy Shop Backend application.
+This document summarizes all the fixes and improvements made to the Reports API system in the soapy bubbles Backend application.
 
 ## Issues Identified and Fixed
 

@@ -28,7 +28,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=2'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '50ml',
                     'ingredients' => ['فيتامين C', 'حمض الهيالورونيك', 'زيت الأرغان']
                 ],
@@ -47,7 +47,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=4'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '30ml',
                     'ingredients' => ['ريتينول', 'فيتامين E', 'زيت الجوجوبا']
                 ],
@@ -66,7 +66,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=6'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '150ml',
                     'ingredients' => ['فحم نشط', 'طين البنتونيت', 'زيت شجرة الشاي']
                 ],
@@ -86,7 +86,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=8'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '200ml',
                     'ingredients' => ['زبدة الشيا', 'زيت جوز الهند', 'فيتامين E']
                 ],
@@ -105,7 +105,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=10'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '100ml',
                     'ingredients' => ['زيت الأرغان', 'زيت الورد', 'فيتامين A']
                 ],
@@ -124,7 +124,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=12'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '120g',
                     'ingredients' => ['عسل طبيعي', 'زيت اللافندر', 'زيت الزيتون']
                 ],
@@ -144,7 +144,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=14'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '50ml',
                     'notes' => ['ياسمين', 'ورد', 'خشب الصندل']
                 ],
@@ -163,7 +163,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=16'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '50ml',
                     'notes' => ['عود', 'عنبر', 'مسك']
                 ],
@@ -183,7 +183,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=18'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'shade' => 'Ruby Red',
                     'finish' => 'Matte'
                 ],
@@ -202,7 +202,7 @@ class ProductSeeder extends Seeder
                     'https://picsum.photos/800/800?random=20'
                 ],
                 'meta' => [
-                    'brand' => 'Soapy Shop',
+                    'brand' => 'soapy bubbles',
                     'size' => '30ml',
                     'coverage' => 'Full',
                     'finish' => 'Natural'

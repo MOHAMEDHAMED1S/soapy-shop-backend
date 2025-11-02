@@ -2,9 +2,9 @@
 
 ## نظرة عامة - Overview
 
-نظام الإشعارات في متجر Soapy Shop يوفر إشعارات فورية للمديرين حول الأحداث المهمة في المتجر، مثل الطلبات المدفوعة والمشحونة والمسلمة. يستخدم النظام Laravel Broadcasting مع Pusher لإرسال الإشعارات في الوقت الفعلي.
+نظام الإشعارات في متجر soapy bubbles يوفر إشعارات فورية للمديرين حول الأحداث المهمة في المتجر، مثل الطلبات المدفوعة والمشحونة والمسلمة. يستخدم النظام Laravel Broadcasting مع Pusher لإرسال الإشعارات في الوقت الفعلي.
 
-The notification system in Soapy Shop provides real-time notifications to administrators about important store events, such as paid, shipped, and delivered orders. The system uses Laravel Broadcasting with Pusher for real-time notifications.
+The notification system in soapy bubbles provides real-time notifications to administrators about important store events, such as paid, shipped, and delivered orders. The system uses Laravel Broadcasting with Pusher for real-time notifications.
 
 ## الميزات الرئيسية - Key Features
 
@@ -600,7 +600,7 @@ $stats = Cache::remember('notification_stats', 300, function () {
 
 ## الخلاصة - Summary
 
-نظام الإشعارات في Soapy Shop يوفر:
+نظام الإشعارات في soapy bubbles يوفر:
 
 - ✅ إشعارات فورية للطلبات المدفوعة فقط
 - ✅ واجهة برمجة تطبيقات شاملة ومرنة

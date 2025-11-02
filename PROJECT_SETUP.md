@@ -1,4 +1,4 @@
-# 🛍️ Soapy Shop - E-Commerce Backend
+# 🛍️ soapy bubbles - E-Commerce Backend
 
 ## تم إنجاز التهيئة الأساسية للمشروع ✅
 

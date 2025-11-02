@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 🚀 Soapy Shop Backend Performance Optimization Script
+# 🚀 soapy bubbles Backend Performance Optimization Script
 # This script optimizes the Laravel backend for better performance
 
 echo "🚀 Starting Backend Performance Optimization..."
