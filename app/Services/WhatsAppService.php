@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\WhatsAppSetting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class WhatsAppService
 {
@@ -16,8 +17,8 @@ class WhatsAppService
     {
         // Load settings from database
         $this->baseUrl = WhatsAppSetting::getBaseUrl();
-        $this->adminPhones = WhatsAppSetting::getAdminPhones();
-        $this->deliveryPhones = WhatsAppSetting::getDeliveryPhones();
+        $this->adminPhones = array_values(array_unique(array_filter(WhatsAppSetting::getAdminPhones())));
+        $this->deliveryPhones = array_values(array_unique(array_filter(WhatsAppSetting::getDeliveryPhones())));
     }
 
     /**
@@ -26,6 +27,16 @@ class WhatsAppService
     public function notifyAdminNewPaidOrder($order)
     {
         try {
+            // Idempotency: avoid duplicate sends for same order
+            $cacheKey = 'wa_notified_admin_order_' . $order->id;
+            if (Cache::has($cacheKey)) {
+                Log::info('WhatsApp admin notification already sent (idempotent skip)', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ]);
+                return;
+            }
+
             // Check if WhatsApp is enabled
             if (!WhatsAppSetting::isEnabled()) {
                 Log::info('WhatsApp is disabled globally');
@@ -64,9 +75,29 @@ class WhatsAppService
             foreach ($this->adminPhones as $phone) {
                 if (empty($phone)) continue;
 
+                // استراتيجية جديدة: جرّب الرسالة النصية أولاً، ثم الصورة كتحسين اختياري
                 try {
-                    // إرسال الواتساب
-                    $response = Http::timeout(10)
+                    $textResp = $this->sendMessage($phone, $message);
+                    if (($textResp['success'] ?? false) === true) {
+                        Log::info('WhatsApp text sent successfully to admin', [
+                            'order_id' => $order->id,
+                            'phone' => $phone,
+                        ]);
+                        $results[] = ['phone' => $phone, 'success' => true, 'type' => 'text'];
+                        // لا نحاول إرسال الصورة لتجنب المهلة طالما النص نجح
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('WhatsApp text send failed for admin, will attempt image', [
+                        'order_id' => $order->id,
+                        'phone' => $phone,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
+                // إذا فشل النص، جرّب إرسال الصورة مع الكابتشن
+                try {
+                    $response = Http::timeout(20)
                         ->asForm()
                         ->post("{$this->baseUrl}/api/send/image-url", [
                             'to' => $phone,
@@ -75,14 +106,14 @@ class WhatsAppService
                         ]);
 
                     if ($response->successful()) {
-                        Log::info('WhatsApp notification sent successfully to admin', [
+                        Log::info('WhatsApp image sent successfully to admin', [
                             'order_id' => $order->id,
                             'phone' => $phone,
                             'response' => $response->json()
                         ]);
-                        $results[] = ['phone' => $phone, 'success' => true];
+                        $results[] = ['phone' => $phone, 'success' => true, 'type' => 'image'];
                     } else {
-                        Log::warning('WhatsApp API returned error for admin', [
+                        Log::warning('WhatsApp image API returned error for admin', [
                             'order_id' => $order->id,
                             'phone' => $phone,
                             'status' => $response->status(),
@@ -91,7 +122,7 @@ class WhatsAppService
                         $results[] = ['phone' => $phone, 'success' => false];
                     }
                 } catch (\Exception $e) {
-                    Log::error('Failed to send WhatsApp to admin phone', [
+                    Log::error('Failed to send WhatsApp image to admin phone', [
                         'order_id' => $order->id,
                         'phone' => $phone,
                         'error' => $e->getMessage()
@@ -100,8 +131,14 @@ class WhatsAppService
                 }
             }
 
+            $anySuccess = count(array_filter($results, fn($r) => $r['success'])) > 0;
+            if ($anySuccess) {
+                // mark idempotent flag to avoid duplicates
+                Cache::put($cacheKey, true, now()->addMinutes(10));
+            }
+
             return [
-                'success' => count(array_filter($results, fn($r) => $r['success'])) > 0,
+                'success' => $anySuccess,
                 'results' => $results
             ];
 
@@ -259,6 +296,16 @@ class WhatsAppService
     public function notifyDeliveryNewPaidOrder($order)
     {
         try {
+            // Idempotency: avoid duplicate sends for same order
+            $cacheKey = 'wa_notified_delivery_order_' . $order->id;
+            if (Cache::has($cacheKey)) {
+                Log::info('WhatsApp delivery notification already sent (idempotent skip)', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ]);
+                return;
+            }
+
             // Check if WhatsApp is enabled
             if (!WhatsAppSetting::isEnabled()) {
                 Log::info('WhatsApp is disabled globally');
@@ -297,9 +344,28 @@ class WhatsAppService
             foreach ($this->deliveryPhones as $phone) {
                 if (empty($phone)) continue;
 
+                // استراتيجية جديدة: جرّب الرسالة النصية أولاً، ثم الصورة كتحسين اختياري
                 try {
-                    // إرسال الواتساب
-                    $response = Http::timeout(10)
+                    $textResp = $this->sendMessage($phone, $message);
+                    if (($textResp['success'] ?? false) === true) {
+                        Log::info('WhatsApp text sent successfully to delivery', [
+                            'order_id' => $order->id,
+                            'phone' => $phone,
+                        ]);
+                        $results[] = ['phone' => $phone, 'success' => true, 'type' => 'text'];
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('WhatsApp text send failed for delivery, will attempt image', [
+                        'order_id' => $order->id,
+                        'phone' => $phone,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
+                // إذا فشل النص، جرّب إرسال الصورة مع الكابتشن
+                try {
+                    $response = Http::timeout(20)
                         ->asForm()
                         ->post("{$this->baseUrl}/api/send/image-url", [
                             'to' => $phone,
@@ -308,14 +374,14 @@ class WhatsAppService
                         ]);
 
                     if ($response->successful()) {
-                        Log::info('WhatsApp notification sent successfully to delivery', [
+                        Log::info('WhatsApp image sent successfully to delivery', [
                             'order_id' => $order->id,
                             'phone' => $phone,
                             'response' => $response->json()
                         ]);
-                        $results[] = ['phone' => $phone, 'success' => true];
+                        $results[] = ['phone' => $phone, 'success' => true, 'type' => 'image'];
                     } else {
-                        Log::warning('WhatsApp API returned error for delivery', [
+                        Log::warning('WhatsApp image API returned error for delivery', [
                             'order_id' => $order->id,
                             'phone' => $phone,
                             'status' => $response->status(),
@@ -324,7 +390,7 @@ class WhatsAppService
                         $results[] = ['phone' => $phone, 'success' => false];
                     }
                 } catch (\Exception $e) {
-                    Log::error('Failed to send WhatsApp to delivery phone', [
+                    Log::error('Failed to send WhatsApp image to delivery phone', [
                         'order_id' => $order->id,
                         'phone' => $phone,
                         'error' => $e->getMessage()
@@ -333,8 +399,13 @@ class WhatsAppService
                 }
             }
 
+            $anySuccess = count(array_filter($results, fn($r) => $r['success'])) > 0;
+            if ($anySuccess) {
+                Cache::put($cacheKey, true, now()->addMinutes(10));
+            }
+
             return [
-                'success' => count(array_filter($results, fn($r) => $r['success'])) > 0,
+                'success' => $anySuccess,
                 'results' => $results
             ];
 
@@ -506,7 +577,7 @@ class WhatsAppService
     public function sendMessage($to, $message)
     {
         try {
-            $response = Http::timeout(10)
+            $response = Http::timeout(20)
                 ->asForm()
                 ->post("{$this->baseUrl}/api/send/message", [
                     'to' => $to,
@@ -547,7 +618,7 @@ class WhatsAppService
                 $payload['message'] = $additionalMessage;
             }
 
-            $response = Http::timeout(10)
+            $response = Http::timeout(20)
                 ->asForm()
                 ->post("{$this->baseUrl}/api/send/image-url", $payload);
 

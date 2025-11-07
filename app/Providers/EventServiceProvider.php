@@ -8,6 +8,7 @@ use App\Events\NotificationCreated;
 use App\Listeners\SendNotificationEmail;
 use App\Events\OrderPaid;
 use App\Listeners\SendOrderNotificationToAdmins;
+use App\Listeners\SendOrderNotificationToWhatsApp;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -32,6 +33,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderPaid::class => [
             SendOrderNotificationToAdmins::class,
+            SendOrderNotificationToWhatsApp::class,
         ],
     ];
 
