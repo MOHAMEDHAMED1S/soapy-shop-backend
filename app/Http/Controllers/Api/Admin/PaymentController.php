@@ -178,7 +178,7 @@ class PaymentController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'payment_method' => 'required|string|in:card,knet,visa,mastercard,amex',
+                'payment_method' => 'required|string',
             ]);
 
             if ($validator->fails()) {

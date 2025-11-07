@@ -71,7 +71,7 @@ class PaymentController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'order_id' => 'required|exists:orders,id',
-                'payment_method' => 'required|string|in:vm,kn,ae,md,ap,stc,uaecc,gp,b,card,knet,visa,mastercard,amex',
+                'payment_method' => 'required|string',
                 'customer_ip' => 'required|ip',
                 'user_agent' => 'nullable|string|max:500',
             ]);
