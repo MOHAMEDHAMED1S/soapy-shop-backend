@@ -87,6 +87,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/discount-codes/{code}', [\App\Http\Controllers\Api\Customer\DiscountController::class, 'getCodeDetails']);
     Route::post('/discount-codes/validate', [\App\Http\Controllers\Api\Customer\DiscountController::class, 'validateCode']);
     
+    // Spin Wheel (Public)
+    Route::get('/spin-wheel/items', [\App\Http\Controllers\Api\Customer\SpinWheelController::class, 'getItems']);
+    Route::post('/spin-wheel/check-previous', [\App\Http\Controllers\Api\Customer\SpinWheelController::class, 'checkPreviousSpin']);
+    Route::post('/spin-wheel/spin', [\App\Http\Controllers\Api\Customer\SpinWheelController::class, 'spin']);
+    
     // Shipping Cost (Public)
     Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
     
@@ -299,6 +304,12 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::post('/categories/update-sort-order', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'updateSortOrder']);
     Route::options('/categories/update-sort-order', function () { return response('', 204); });
     
+    // OPTIONS routes for Spin Wheel
+    Route::options('/spin-wheel/items', function () { return response('', 204); });
+    Route::options('/spin-wheel/items/{id}', function () { return response('', 204); });
+    Route::options('/spin-wheel/results', function () { return response('', 204); });
+    Route::options('/spin-wheel/statistics', function () { return response('', 204); });
+    
     // OPTIONS routes for notifications
     Route::options('/notifications', function () { return response('', 204); });
     Route::options('/notifications/statistics', function () { return response('', 204); });
@@ -391,6 +402,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/discount-codes/{id}/usage-history', [\App\Http\Controllers\Api\Admin\DiscountCodeController::class, 'usageHistory']);
     Route::post('/discount-codes/{id}/duplicate', [\App\Http\Controllers\Api\Admin\DiscountCodeController::class, 'duplicate']);
 
+    // Spin Wheel Management (Admin)
+    Route::get('/spin-wheel/items', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'index']);
+    Route::post('/spin-wheel/items', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'store']);
+    Route::get('/spin-wheel/items/{id}', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'show']);
+    Route::put('/spin-wheel/items/{id}', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'update']);
+    Route::delete('/spin-wheel/items/{id}', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'destroy']);
+    Route::get('/spin-wheel/results', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'getResults']);
+    Route::get('/spin-wheel/statistics', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'getStatistics']);
+    
     // Product Discounts Management
     Route::get('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'index']);
     Route::post('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'store']);
