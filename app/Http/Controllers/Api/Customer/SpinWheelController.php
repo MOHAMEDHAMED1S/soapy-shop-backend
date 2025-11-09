@@ -19,15 +19,26 @@ class SpinWheelController extends Controller
 
     /**
      * Get active spin wheel items (for display).
+     * Only returns safe fields - excludes sensitive data like discount_code and probability.
      */
     public function getItems()
     {
         try {
             $items = $this->spinWheelService->getActiveItems();
 
+            // Only return safe fields for public display
+            $safeItems = $items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->text,
+                    'order' => $item->order,
+                    'description' => $item->description,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $items,
+                'data' => $safeItems,
                 'message' => 'Spin wheel items retrieved successfully'
             ]);
 
