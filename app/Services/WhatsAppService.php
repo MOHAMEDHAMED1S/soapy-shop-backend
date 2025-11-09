@@ -96,6 +96,7 @@ class WhatsAppService
                 }
 
                 // إذا فشل النص، جرّب إرسال الصورة مع الكابتشن
+                $imageSent = false;
                 try {
                     $response = Http::timeout(20)
                         ->asForm()
@@ -112,6 +113,7 @@ class WhatsAppService
                             'response' => $response->json()
                         ]);
                         $results[] = ['phone' => $phone, 'success' => true, 'type' => 'image'];
+                        $imageSent = true;
                     } else {
                         Log::warning('WhatsApp image API returned error for admin', [
                             'order_id' => $order->id,
@@ -119,7 +121,6 @@ class WhatsAppService
                             'status' => $response->status(),
                             'body' => $response->body()
                         ]);
-                        $results[] = ['phone' => $phone, 'success' => false];
                     }
                 } catch (\Exception $e) {
                     Log::error('Failed to send WhatsApp image to admin phone', [
@@ -127,7 +128,34 @@ class WhatsAppService
                         'phone' => $phone,
                         'error' => $e->getMessage()
                     ]);
-                    $results[] = ['phone' => $phone, 'success' => false, 'error' => $e->getMessage()];
+                }
+
+                // إذا فشل إرسال الصورة، حاول إرسال رسالة نصية فقط كبديل
+                if (!$imageSent) {
+                    try {
+                        $textResp = $this->sendMessage($phone, $message);
+                        if (($textResp['success'] ?? false) === true) {
+                            Log::info('WhatsApp text sent successfully to admin as fallback', [
+                                'order_id' => $order->id,
+                                'phone' => $phone,
+                            ]);
+                            $results[] = ['phone' => $phone, 'success' => true, 'type' => 'text_fallback'];
+                        } else {
+                            Log::error('WhatsApp text fallback also failed for admin', [
+                                'order_id' => $order->id,
+                                'phone' => $phone,
+                                'error' => $textResp['error'] ?? 'Unknown error'
+                            ]);
+                            $results[] = ['phone' => $phone, 'success' => false];
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('WhatsApp text fallback exception for admin', [
+                            'order_id' => $order->id,
+                            'phone' => $phone,
+                            'error' => $e->getMessage()
+                        ]);
+                        $results[] = ['phone' => $phone, 'success' => false, 'error' => $e->getMessage()];
+                    }
                 }
             }
 
@@ -364,6 +392,7 @@ class WhatsAppService
                 }
 
                 // إذا فشل النص، جرّب إرسال الصورة مع الكابتشن
+                $imageSent = false;
                 try {
                     $response = Http::timeout(20)
                         ->asForm()
@@ -380,6 +409,7 @@ class WhatsAppService
                             'response' => $response->json()
                         ]);
                         $results[] = ['phone' => $phone, 'success' => true, 'type' => 'image'];
+                        $imageSent = true;
                     } else {
                         Log::warning('WhatsApp image API returned error for delivery', [
                             'order_id' => $order->id,
@@ -387,7 +417,6 @@ class WhatsAppService
                             'status' => $response->status(),
                             'body' => $response->body()
                         ]);
-                        $results[] = ['phone' => $phone, 'success' => false];
                     }
                 } catch (\Exception $e) {
                     Log::error('Failed to send WhatsApp image to delivery phone', [
@@ -395,7 +424,34 @@ class WhatsAppService
                         'phone' => $phone,
                         'error' => $e->getMessage()
                     ]);
-                    $results[] = ['phone' => $phone, 'success' => false, 'error' => $e->getMessage()];
+                }
+
+                // إذا فشل إرسال الصورة، حاول إرسال رسالة نصية فقط كبديل
+                if (!$imageSent) {
+                    try {
+                        $textResp = $this->sendMessage($phone, $message);
+                        if (($textResp['success'] ?? false) === true) {
+                            Log::info('WhatsApp text sent successfully to delivery as fallback', [
+                                'order_id' => $order->id,
+                                'phone' => $phone,
+                            ]);
+                            $results[] = ['phone' => $phone, 'success' => true, 'type' => 'text_fallback'];
+                        } else {
+                            Log::error('WhatsApp text fallback also failed for delivery', [
+                                'order_id' => $order->id,
+                                'phone' => $phone,
+                                'error' => $textResp['error'] ?? 'Unknown error'
+                            ]);
+                            $results[] = ['phone' => $phone, 'success' => false];
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('WhatsApp text fallback exception for delivery', [
+                            'order_id' => $order->id,
+                            'phone' => $phone,
+                            'error' => $e->getMessage()
+                        ]);
+                        $results[] = ['phone' => $phone, 'success' => false, 'error' => $e->getMessage()];
+                    }
                 }
             }
 

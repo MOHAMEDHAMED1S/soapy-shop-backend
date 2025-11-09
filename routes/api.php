@@ -92,6 +92,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/spin-wheel/check-previous', [\App\Http\Controllers\Api\Customer\SpinWheelController::class, 'checkPreviousSpin']);
     Route::post('/spin-wheel/spin', [\App\Http\Controllers\Api\Customer\SpinWheelController::class, 'spin']);
     
+    // Home Banner (Public)
+    Route::get('/home-banner', [\App\Http\Controllers\Api\HomeBannerController::class, 'show']);
+    
     // Shipping Cost (Public)
     Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
     
@@ -309,6 +312,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::options('/spin-wheel/items/{id}', function () { return response('', 204); });
     Route::options('/spin-wheel/results', function () { return response('', 204); });
     Route::options('/spin-wheel/statistics', function () { return response('', 204); });
+    Route::options('/home-banner', function () { return response('', 204); });
     
     // OPTIONS routes for notifications
     Route::options('/notifications', function () { return response('', 204); });
@@ -410,6 +414,10 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::delete('/spin-wheel/items/{id}', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'destroy']);
     Route::get('/spin-wheel/results', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'getResults']);
     Route::get('/spin-wheel/statistics', [\App\Http\Controllers\Api\Admin\AdminSpinWheelController::class, 'getStatistics']);
+    
+    // Home Banner (Admin)
+    Route::get('/home-banner', [\App\Http\Controllers\Api\Admin\HomeBannerController::class, 'show']);
+    Route::put('/home-banner', [\App\Http\Controllers\Api\Admin\HomeBannerController::class, 'update']);
     
     // Product Discounts Management
     Route::get('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'index']);
