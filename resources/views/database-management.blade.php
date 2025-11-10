@@ -259,12 +259,85 @@
             transform: scale(1.1);
             background: #229954;
         }
+
+        /* Password Protection Modal */
+        .password-modal {
+            display: flex;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-modal-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .password-modal-content h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .password-modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            direction: rtl;
+        }
+
+        .password-modal-content input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .password-error {
+            color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.authenticated {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <!-- Password Protection Modal -->
+    <div id="passwordModal" class="password-modal">
+        <div class="password-modal-content">
+            <p style="color: #666; margin-bottom: 20px;">يرجى إدخال كلمة المرور للوصول إلى هذه الصفحة</p>
+            <input type="password" id="passwordInput" placeholder="أدخل كلمة المرور" autocomplete="off" />
+            <div class="password-error" id="passwordError">كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.</div>
+            <button class="btn btn-primary" onclick="checkPassword()" style="width: 100%; margin-top: 10px;">
+                دخول
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
     <div class="container">
         <div class="header">
-            <h1>🗄️ إدارة قاعدة البيانات</h1>
+            <h1> إدارة قاعدة البيانات</h1>
             <p>أداة مؤقتة لعرض وإدارة جداول قاعدة البيانات</p>
         </div>
 
@@ -310,29 +383,103 @@
     </div>
 
     <button class="refresh-btn" onclick="loadTables()" title="تحديث">🔄</button>
+    </div>
+    </div>
 
     <script>
+        // كلمة المرور المطلوبة
+        const REQUIRED_PASSWORD = 'codemz';
+        const STORAGE_KEY = 'db_management_authenticated';
+
+        // دالة للحصول على headers مع كلمة المرور
+        function getAuthHeaders() {
+            return {
+                'X-Password': REQUIRED_PASSWORD,
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            };
+        }
+
+        // التحقق من المصادقة المحفوظة
+        function checkStoredAuth() {
+            const authenticated = sessionStorage.getItem(STORAGE_KEY);
+            if (authenticated === 'true') {
+                showMainContent();
+            }
+        }
+
+        // التحقق من كلمة المرور
+        function checkPassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const passwordError = document.getElementById('passwordError');
+            const password = passwordInput.value;
+
+            if (password === REQUIRED_PASSWORD) {
+                // حفظ حالة المصادقة في sessionStorage
+                sessionStorage.setItem(STORAGE_KEY, 'true');
+                showMainContent();
+            } else {
+                passwordError.style.display = 'block';
+                passwordInput.value = '';
+                passwordInput.focus();
+                setTimeout(() => {
+                    passwordError.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // إظهار المحتوى الرئيسي
+        function showMainContent() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('mainContent').classList.add('authenticated');
+            loadTables();
+        }
+
+        // السماح بالدخول عند الضغط على Enter
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+            
+            // التحقق من المصادقة المحفوظة
+            checkStoredAuth();
+            
+            // إعطاء التركيز على حقل كلمة المرور
+            if (!sessionStorage.getItem(STORAGE_KEY)) {
+                passwordInput.focus();
+            }
+        });
+
         // متغيرات عامة
         let currentTable = null;
         let currentOffset = 0;
         let currentLimit = 50;
 
-        // تحميل الجداول عند بدء الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            loadTables();
-        });
-
         // دالة تحميل قائمة الجداول
         async function loadTables() {
             showLoading(true);
             try {
-                const response = await fetch('/api/v1/temp-db/tables');
+                const response = await fetch('/api/v1/temp-db/tables', {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
                 const data = await response.json();
                 
                 if (data.success) {
                     displayTables(data.tables);
                 } else {
-                    showError('خطأ في تحميل الجداول: ' + data.message);
+                    if (response.status === 401) {
+                        // إذا كانت المشكلة في المصادقة، إعادة طلب كلمة المرور
+                        sessionStorage.removeItem(STORAGE_KEY);
+                        document.getElementById('passwordModal').style.display = 'flex';
+                        document.getElementById('mainContent').classList.remove('authenticated');
+                        showError('انتهت صلاحية الجلسة. يرجى إدخال كلمة المرور مرة أخرى.');
+                    } else {
+                        showError('خطأ في تحميل الجداول: ' + data.message);
+                    }
                 }
             } catch (error) {
                 showError('خطأ في الاتصال: ' + error.message);
@@ -373,13 +520,23 @@
             
             showLoading(true);
             try {
-                const response = await fetch(`/api/v1/temp-db/tables/${tableName}?limit=${currentLimit}&offset=${offset}`);
+                const response = await fetch(`/api/v1/temp-db/tables/${tableName}?limit=${currentLimit}&offset=${offset}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
                 const data = await response.json();
                 
                 if (data.success) {
                     displayTableData(data);
                 } else {
-                    showError('خطأ في تحميل بيانات الجدول: ' + data.message);
+                    if (response.status === 401) {
+                        sessionStorage.removeItem(STORAGE_KEY);
+                        document.getElementById('passwordModal').style.display = 'flex';
+                        document.getElementById('mainContent').classList.remove('authenticated');
+                        showError('انتهت صلاحية الجلسة. يرجى إدخال كلمة المرور مرة أخرى.');
+                    } else {
+                        showError('خطأ في تحميل بيانات الجدول: ' + data.message);
+                    }
                 }
             } catch (error) {
                 showError('خطأ في الاتصال: ' + error.message);
@@ -487,10 +644,7 @@
             try {
                 const response = await fetch(`/api/v1/temp-db/tables/${tableName}/truncate`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    headers: getAuthHeaders()
                 });
                 
                 const data = await response.json();
@@ -499,7 +653,14 @@
                     showSuccess(data.message);
                     loadTables(); // إعادة تحميل الجداول
                 } else {
-                    showError('خطأ في تفريغ الجدول: ' + data.message);
+                    if (response.status === 401) {
+                        sessionStorage.removeItem(STORAGE_KEY);
+                        document.getElementById('passwordModal').style.display = 'flex';
+                        document.getElementById('mainContent').classList.remove('authenticated');
+                        showError('انتهت صلاحية الجلسة. يرجى إدخال كلمة المرور مرة أخرى.');
+                    } else {
+                        showError('خطأ في تفريغ الجدول: ' + data.message);
+                    }
                 }
             } catch (error) {
                 showError('خطأ في الاتصال: ' + error.message);

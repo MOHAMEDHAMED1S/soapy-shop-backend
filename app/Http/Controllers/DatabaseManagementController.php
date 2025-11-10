@@ -10,6 +10,31 @@ use Illuminate\Http\JsonResponse;
 class DatabaseManagementController extends Controller
 {
     /**
+     * كلمة المرور المطلوبة للوصول إلى API
+     */
+    private const REQUIRED_PASSWORD = 'codemz';
+
+    /**
+     * التحقق من كلمة المرور
+     */
+    private function validatePassword(Request $request): bool
+    {
+        $password = $request->header('X-Password') ?? $request->input('password');
+        return $password === self::REQUIRED_PASSWORD;
+    }
+
+    /**
+     * إرجاع رد خطأ عند فشل المصادقة
+     */
+    private function unauthorizedResponse(): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'غير مصرح: كلمة المرور غير صحيحة أو غير موجودة'
+        ], 401);
+    }
+
+    /**
      * عرض صفحة إدارة قاعدة البيانات
      */
     public function index()
@@ -20,8 +45,13 @@ class DatabaseManagementController extends Controller
     /**
      * الحصول على قائمة بجميع الجداول في قاعدة البيانات
      */
-    public function getTables(): JsonResponse
+    public function getTables(Request $request): JsonResponse
     {
+        // التحقق من كلمة المرور
+        if (!$this->validatePassword($request)) {
+            return $this->unauthorizedResponse();
+        }
+
         try {
             $tables = DB::select('SHOW TABLES');
             $tableNames = [];
@@ -52,6 +82,11 @@ class DatabaseManagementController extends Controller
      */
     public function getTableData(Request $request, $tableName): JsonResponse
     {
+        // التحقق من كلمة المرور
+        if (!$this->validatePassword($request)) {
+            return $this->unauthorizedResponse();
+        }
+
         try {
             // التحقق من وجود الجدول
             if (!Schema::hasTable($tableName)) {
@@ -97,6 +132,11 @@ class DatabaseManagementController extends Controller
      */
     public function truncateTable(Request $request, $tableName): JsonResponse
     {
+        // التحقق من كلمة المرور
+        if (!$this->validatePassword($request)) {
+            return $this->unauthorizedResponse();
+        }
+
         try {
             // التحقق من وجود الجدول
             if (!Schema::hasTable($tableName)) {
@@ -161,6 +201,11 @@ class DatabaseManagementController extends Controller
      */
     public function deleteRecords(Request $request, $tableName): JsonResponse
     {
+        // التحقق من كلمة المرور
+        if (!$this->validatePassword($request)) {
+            return $this->unauthorizedResponse();
+        }
+
         try {
             // التحقق من وجود الجدول
             if (!Schema::hasTable($tableName)) {
