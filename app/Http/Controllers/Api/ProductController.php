@@ -153,15 +153,19 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified product by slug
+     * Display the specified product by ID or slug
      */
-    public function show(string $slug)
+    public function show(string $identifier)
     {
         try {
-            $product = Product::with('category')
-                ->where('slug', $slug)
-                ->where('is_available', true)
-                ->first();
+            $query = Product::with('category')->where('is_available', true);
+            
+            // Check if identifier is numeric (ID) or string (slug)
+            if (is_numeric($identifier)) {
+                $product = $query->where('id', $identifier)->first();
+            } else {
+                $product = $query->where('slug', $identifier)->first();
+            }
 
             if (!$product) {
                 return response()->json([
