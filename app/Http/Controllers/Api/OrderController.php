@@ -283,7 +283,7 @@ class OrderController extends Controller
                 'discount_code' => 'required|string|max:50',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1|max:10',
+                'items.*.quantity' => 'required|integer',
                 'customer_phone' => 'nullable|string|max:20',
                 'shipping_amount' => 'nullable|numeric|min:0',
             ]);
