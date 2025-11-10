@@ -40,7 +40,7 @@ class OrderController extends Controller
                 'shipping_address.notes' => 'nullable|string|max:500',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1|max:10',
+                'items.*.quantity' => 'required|integer|min:1',
                 'notes' => 'nullable|string|max:1000',
                 'discount_code' => 'nullable|string|max:50',
                 'shipping_amount' => 'nullable|numeric|min:0',
@@ -283,7 +283,7 @@ class OrderController extends Controller
                 'discount_code' => 'required|string|max:50',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer',
+                'items.*.quantity' => 'required|integer|min:1',
                 'customer_phone' => 'nullable|string|max:20',
                 'shipping_amount' => 'nullable|numeric|min:0',
             ]);
@@ -403,7 +403,7 @@ class OrderController extends Controller
             $validator = Validator::make($request->all(), [
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1|max:10',
+                'items.*.quantity' => 'required|integer|min:1',
                 'discount_code' => 'nullable|string|max:50',
                 'shipping_amount' => 'nullable|numeric|min:0',
             ]);
