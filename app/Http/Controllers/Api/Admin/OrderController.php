@@ -28,8 +28,13 @@ class OrderController extends Controller
             $query = Order::with(['orderItems.product', 'payment']);
 
             // Filter by status
+            // If specific status is provided, use it (higher priority)
+            // Otherwise, if active_orders filter is enabled, show paid, shipped, delivered
             if ($request->has('status') && $request->status) {
                 $query->where('status', $request->status);
+            } elseif ($request->has('active_orders') && $request->active_orders === 'true') {
+                // Filter for paid, shipped, and delivered orders
+                $query->whereIn('status', ['paid', 'shipped', 'delivered']);
             }
 
             // Filter by date range
@@ -102,6 +107,9 @@ class OrderController extends Controller
             $filteredStatsQuery = clone $baseStatsQuery;
             if ($request->has('status') && $request->status) {
                 $filteredStatsQuery->where('status', $request->status);
+            } elseif ($request->has('active_orders') && $request->active_orders === 'true') {
+                // Filter for paid, shipped, and delivered orders
+                $filteredStatsQuery->whereIn('status', ['paid', 'shipped', 'delivered']);
             }
 
             // Calculate filtered statistics
@@ -120,6 +128,7 @@ class OrderController extends Controller
                 'average_order_value' => (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->avg('total_amount'),
                 'filters_applied' => [
                     'status' => $request->status ?? null,
+                    'active_orders' => $request->active_orders ?? null,
                     'date_from' => $request->date_from ?? null,
                     'date_to' => $request->date_to ?? null,
                     'start_date' => $request->start_date ?? null,
