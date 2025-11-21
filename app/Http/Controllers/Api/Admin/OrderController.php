@@ -268,6 +268,90 @@ class OrderController extends Controller
     }
 
     /**
+     * Update order details (customer information and shipping address)
+     */
+    public function update(Request $request, string $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'customer_name' => 'nullable|string|max:255',
+                'customer_phone' => 'nullable|string|max:20',
+                'customer_email' => 'nullable|email|max:255',
+                'shipping_address' => 'nullable|array',
+                'shipping_address.street' => 'nullable|string|max:500',
+                'shipping_address.city' => 'nullable|string|max:100',
+                'shipping_address.governorate' => 'nullable|string|max:100',
+                'shipping_address.postal_code' => 'nullable|string|max:20',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $order = Order::find($id);
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found'
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            // Prepare update data - only update fields that are provided
+            $updateData = [];
+            
+            if ($request->has('customer_name')) {
+                $updateData['customer_name'] = $request->customer_name;
+            }
+            
+            if ($request->has('customer_phone')) {
+                $updateData['customer_phone'] = $request->customer_phone;
+            }
+            
+            if ($request->has('customer_email')) {
+                $updateData['customer_email'] = $request->customer_email;
+            }
+            
+            if ($request->has('shipping_address')) {
+                // Merge with existing shipping address to preserve any fields not being updated
+                $currentAddress = $order->shipping_address ?? [];
+                $newAddress = array_merge($currentAddress, array_filter($request->shipping_address, function($value) {
+                    return $value !== null;
+                }));
+                $updateData['shipping_address'] = $newAddress;
+            }
+
+            // Update the order
+            $order->update($updateData);
+
+            DB::commit();
+
+            // Reload order with relationships
+            $order->load(['orderItems.product', 'payment']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $order,
+                'message' => 'Order updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get orders statistics for dashboard
      */
     public function statistics(Request $request)
