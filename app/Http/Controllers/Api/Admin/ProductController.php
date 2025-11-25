@@ -74,6 +74,7 @@ class ProductController extends Controller
                 'description' => 'required|string',
                 'short_description' => 'nullable|string|max:500',
                 'price' => 'required|numeric|min:0',
+                'weight_grams' => 'nullable|integer|min:0',
                 'currency' => 'nullable|string|max:3',
                 'is_available' => 'boolean',
                 'has_inventory' => 'boolean',
@@ -111,6 +112,7 @@ class ProductController extends Controller
                 'description' => $request->description,
                 'short_description' => $request->short_description,
                 'price' => $request->price,
+                'weight_grams' => $request->weight_grams,
                 'currency' => $request->currency ?? 'KWD',
                 'is_available' => $request->boolean('is_available', true),
                 'has_inventory' => $request->boolean('has_inventory', false),
@@ -206,6 +208,7 @@ class ProductController extends Controller
                 'description' => 'sometimes|required|string',
                 'short_description' => 'nullable|string|max:500',
                 'price' => 'sometimes|required|numeric|min:0',
+                'weight_grams' => 'nullable|integer|min:0',
                 'currency' => 'nullable|string|max:3',
                 'is_available' => 'boolean',
                 'has_inventory' => 'boolean',
@@ -228,7 +231,7 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             $updateData = $request->only([
-                'title', 'description', 'short_description', 'price', 
+                'title', 'description', 'short_description', 'price', 'weight_grams',
                 'currency', 'is_available', 'category_id', 'images', 'meta'
             ]);
 

@@ -97,6 +97,8 @@ Route::prefix('v1')->group(function () {
     
     // Shipping Cost (Public)
     Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
+    Route::post('/shipping/calculate', [\App\Http\Controllers\Api\ShippingCalculationController::class, 'calculate']);
+    Route::get('/shipping/rates', [\App\Http\Controllers\Api\ShippingCalculationController::class, 'getRates']);
     
     // Site Settings (Public)
     Route::get('/site/orders-status', [\App\Http\Controllers\Api\SiteController::class, 'getOrdersStatus']);
@@ -512,6 +514,29 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
         Route::options('/active', function () { return response('', 204); });
         Route::options('/update', function () { return response('', 204); });
     });
+    
+    // Country Shipping Rates Management (Admin)
+    Route::apiResource('shipping-rates', \App\Http\Controllers\Api\Admin\CountryShippingRateController::class);
+    Route::post('/shipping-rates/bulk-update', [\App\Http\Controllers\Api\Admin\CountryShippingRateController::class, 'bulkUpdate']);
+    Route::options('/shipping-rates', function () { return response('', 204); });
+    Route::options('/shipping-rates/bulk-update', function () { return response('', 204); });
+    Route::options('/shipping-rates/{id}', function () { return response('', 204); });
+    
+    // Shipping Weight Tiers Management (Admin)
+    Route::prefix('shipping-rates/{countryCode}/tiers')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\Admin\ShippingWeightTierController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\Admin\ShippingWeightTierController::class, 'store']);
+        Route::get('/{tier}', [\App\Http\Controllers\Api\Admin\ShippingWeightTierController::class, 'show']);
+        Route::put('/{tier}', [\App\Http\Controllers\Api\Admin\ShippingWeightTierController::class, 'update']);
+        Route::delete('/{tier}', [\App\Http\Controllers\Api\Admin\ShippingWeightTierController::class, 'destroy']);
+        Route::post('/bulk', [\App\Http\Controllers\Api\Admin\ShippingWeightTierController::class, 'bulkUpdate']);
+        
+        // OPTIONS routes for CORS
+        Route::options('/', function () { return response('', 204); });
+        Route::options('/{tier}', function () { return response('', 204); });
+        Route::options('/bulk', function () { return response('', 204); });
+    });
+
     
     // WhatsApp Settings Management (Admin)
     Route::prefix('whatsapp')->group(function () {
