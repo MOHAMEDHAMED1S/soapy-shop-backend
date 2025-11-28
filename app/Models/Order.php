@@ -15,6 +15,7 @@ class Order extends Model
         'customer_name',
         'customer_phone',
         'customer_email',
+        'country_code',
         'shipping_address',
         'total_amount',
         'currency',

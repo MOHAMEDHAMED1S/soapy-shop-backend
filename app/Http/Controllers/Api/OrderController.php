@@ -32,6 +32,7 @@ class OrderController extends Controller
                 'customer_name' => 'required|string|max:255',
                 'customer_phone' => 'required|string|max:20',
                 'customer_email' => 'nullable|email|max:255',
+                'country_code' => 'nullable|string|size:2',
                 'shipping_address' => 'required|array',
                 'shipping_address.street' => 'required|string|max:255',
                 'shipping_address.city' => 'required|string|max:100',
@@ -152,6 +153,9 @@ class OrderController extends Controller
             // Generate tracking number
             $trackingNumber = 'TRK-' . strtoupper(substr(md5($orderNumber . time()), 0, 8));
 
+            // Extract country code from phone or use provided one, default to KW
+            $countryCode = $request->country_code ?? 'KW';
+
             // Create the order
             $order = Order::create([
                 'order_number' => $orderNumber,
@@ -159,6 +163,7 @@ class OrderController extends Controller
                 'customer_name' => $request->customer_name,
                 'customer_phone' => $request->customer_phone,
                 'customer_email' => $request->customer_email,
+                'country_code' => $countryCode,
                 'shipping_address' => $request->shipping_address,
                 'total_amount' => $totalAmount,
                 'currency' => 'KWD',

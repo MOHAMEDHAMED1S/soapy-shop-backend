@@ -25,7 +25,8 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Order::with(['orderItems.product', 'payment']);
+            // Simplified eager loading to prevent timeout - load only necessary data
+            $query = Order::with(['orderItems', 'payment']);
 
             // Filter by status
             // If specific status is provided, use it (higher priority)
@@ -74,7 +75,8 @@ class OrderController extends Controller
             $orders = $query->paginate($perPage);
 
             // Create base query for statistics (without status filter for individual counts)
-            $baseStatsQuery = Order::with(['orderItems.product', 'payment']);
+            // Remove eager loading since we only need counts/sums, not the actual data
+            $baseStatsQuery = Order::query();
 
             // Apply date and search filters only (not status filter for base query)
             if ($request->has('date_from') && $request->date_from) {
@@ -112,20 +114,31 @@ class OrderController extends Controller
                 $filteredStatsQuery->whereIn('status', ['paid', 'shipped', 'delivered']);
             }
 
-            // Calculate filtered statistics
+            // Calculate filtered statistics efficiently using grouped queries
             // Statuses that represent completed/paid orders for revenue calculation
             $revenueStatuses = ['paid', 'shipped', 'delivered'];
             
+            // Get status counts in a single query
+            $statusCounts = (clone $baseStatsQuery)
+                ->selectRaw('status, COUNT(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray();
+            
+            // Get revenue statistics directly (simpler approach)
+            $totalRevenue = (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->sum('total_amount');
+            $avgOrderValue = (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->avg('total_amount');
+            
             $summary = [
                 'total_orders' => $filteredStatsQuery->count(),
-                'pending_orders' => (clone $baseStatsQuery)->where('status', 'pending')->count(),
-                'paid_orders' => (clone $baseStatsQuery)->where('status', 'paid')->count(),
-                'shipped_orders' => (clone $baseStatsQuery)->where('status', 'shipped')->count(),
-                'delivered_orders' => (clone $baseStatsQuery)->where('status', 'delivered')->count(),
-                'cancelled_orders' => (clone $baseStatsQuery)->where('status', 'cancelled')->count(),
-                'awaiting_payment_orders' => (clone $baseStatsQuery)->where('status', 'awaiting_payment')->count(),
-                'total_revenue' => (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->sum('total_amount'),
-                'average_order_value' => (clone $baseStatsQuery)->whereIn('status', $revenueStatuses)->avg('total_amount'),
+                'pending_orders' => $statusCounts['pending'] ?? 0,
+                'paid_orders' => $statusCounts['paid'] ?? 0,
+                'shipped_orders' => $statusCounts['shipped'] ?? 0,
+                'delivered_orders' => $statusCounts['delivered'] ?? 0,
+                'cancelled_orders' => $statusCounts['cancelled'] ?? 0,
+                'awaiting_payment_orders' => $statusCounts['awaiting_payment'] ?? 0,
+                'total_revenue' => $totalRevenue ?? 0,
+                'average_order_value' => $avgOrderValue ?? 0,
                 'filters_applied' => [
                     'status' => $request->status ?? null,
                     'active_orders' => $request->active_orders ?? null,
