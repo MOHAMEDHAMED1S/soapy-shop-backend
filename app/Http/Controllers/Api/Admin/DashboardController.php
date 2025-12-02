@@ -32,24 +32,30 @@ class DashboardController extends Controller
             $startDate = Carbon::now()->subDays($period);
             $endDate = Carbon::now();
 
-            // Basic statistics
+            // Period-based statistics (based on date range)
             $stats = [
-                'total_orders' => Order::count(),
-                'total_products' => Product::count(),
-                'total_categories' => Category::count(),
-                'total_revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])->sum('total_amount'),
-                'pending_orders' => Order::where('status', 'pending')->count(),
+                'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
+                'total_products' => Product::count(), // Total products (not period-based)
+                'total_categories' => Category::count(), // Total categories (not period-based)
+                'total_revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->sum('total_amount'),
+                'pending_orders' => Order::where('status', 'pending')
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->count(),
                 'low_stock_products' => 0, // Stock tracking not implemented yet
                 'unread_notifications' => AdminNotification::whereNull('read_at')->count(),
-                'total_customers' => \App\Models\Customer::count(),
+                'total_customers' => \App\Models\Customer::count(), // Total customers (not period-based)
                 'active_customers' => \App\Models\Customer::where('is_active', true)->count(),
                 'total_discount_codes' => \App\Models\DiscountCode::count(),
                 'active_discount_codes' => \App\Models\DiscountCode::where('is_active', true)->count(),
-                'average_order_value' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])->avg('total_amount') ?? 0,
+                'average_order_value' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->avg('total_amount') ?? 0,
                 'conversion_rate' => $this->calculateConversionRate($period),
             ];
 
-            // Period-based statistics
+            // More detailed period statistics
             $periodStats = [
                 'orders_count' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
                 'revenue' => Order::whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
