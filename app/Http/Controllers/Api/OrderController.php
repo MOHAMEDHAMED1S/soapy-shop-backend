@@ -32,7 +32,7 @@ class OrderController extends Controller
                 'customer_name' => 'required|string|max:255',
                 'customer_phone' => 'required|string|max:20',
                 'customer_email' => 'nullable|email|max:255',
-                'country_code' => 'nullable|string|size:2',
+                'country_code' => 'required|string|size:2', // Now required for shipping calculation
                 'shipping_address' => 'required|array',
                 'shipping_address.street' => 'required|string|max:255',
                 'shipping_address.city' => 'required|string|max:100',
@@ -44,7 +44,7 @@ class OrderController extends Controller
                 'items.*.quantity' => 'required|integer|min:1',
                 'notes' => 'nullable|string|max:1000',
                 'discount_code' => 'nullable|string|max:50',
-                'shipping_amount' => 'nullable|numeric|min:0',
+                // shipping_amount removed - calculated automatically
             ]);
 
             if ($validator->fails()) {
@@ -57,8 +57,9 @@ class OrderController extends Controller
 
             DB::beginTransaction();
 
-            // Validate products availability and calculate subtotal
+            // Validate products availability, calculate subtotal AND total weight
             $subtotalAmount = 0;
+            $totalWeightGrams = 0;
             $orderItems = [];
             $productSnapshots = [];
 
@@ -79,6 +80,10 @@ class OrderController extends Controller
                 $finalPrice = $product->discounted_price ?? $product->price;
                 $itemTotal = $finalPrice * $item['quantity'];
                 $subtotalAmount += $itemTotal;
+                
+                // Calculate total weight (use default 100g if product has no weight)
+                $productWeight = $product->weight_grams ?? 100;
+                $totalWeightGrams += $productWeight * $item['quantity'];
 
                 // Create product snapshot for order history
                 $productSnapshots[] = [
@@ -130,10 +135,25 @@ class OrderController extends Controller
                 $freeShipping = $discountCode->type === 'free_shipping';
             }
 
-            // Calculate shipping amount
-            $shippingAmount = $request->shipping_amount ?? 0;
-            if ($freeShipping) {
-                $shippingAmount = 0;
+            // Extract country code from request, default to KW
+            $countryCode = strtoupper($request->country_code ?? 'KW');
+
+            // Calculate shipping amount automatically based on country and weight
+            $shippingAmount = 0;
+            if (!$freeShipping) {
+                $shippingResult = \App\Models\CountryShippingRate::calculateShipping($totalWeightGrams, $countryCode);
+                
+                if ($shippingResult === null) {
+                    // Country not found or not active - fallback to 0 or return error
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Shipping not available for country: {$countryCode}",
+                        'error_code' => 'SHIPPING_NOT_AVAILABLE'
+                    ], 400);
+                }
+                
+                $shippingAmount = $shippingResult['shipping_cost'];
             }
 
             // Calculate final total
@@ -152,9 +172,6 @@ class OrderController extends Controller
             
             // Generate tracking number
             $trackingNumber = 'TRK-' . strtoupper(substr(md5($orderNumber . time()), 0, 8));
-
-            // Extract country code from phone or use provided one, default to KW
-            $countryCode = $request->country_code ?? 'KW';
 
             // Create the order
             $order = Order::create([
@@ -213,6 +230,13 @@ class OrderController extends Controller
                     'discount_code' => $discountCode?->code,
                     'free_shipping' => $freeShipping,
                     'tracking_number' => $trackingNumber,
+                    'shipping_details' => [
+                        'total_weight_grams' => $totalWeightGrams,
+                        'total_weight_kg' => round($totalWeightGrams / 1000, 3),
+                        'country_code' => $countryCode,
+                        'shipping_cost' => $shippingAmount,
+                        'breakdown' => $shippingResult['breakdown'] ?? null
+                    ],
                     'next_step' => 'payment_required'
                 ],
                 'message' => 'Order created successfully. Proceed to payment.'
