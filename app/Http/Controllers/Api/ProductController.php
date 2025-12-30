@@ -219,6 +219,104 @@ class ProductController extends Controller
     }
 
     /**
+     * Get limited quantity products (low stock)
+     */
+    public function limitedQuantity(Request $request)
+    {
+        try {
+            $limit = $request->get('limit', 8);
+            
+            $products = Product::with('category')
+                ->where('is_available', true)
+                ->where('has_inventory', true)
+                ->where('stock_quantity', '>', 0)
+                ->where('stock_quantity', '<=', 10) // Low stock threshold
+                ->orderBy('stock_quantity', 'asc')
+                ->limit($limit)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $products,
+                'message' => 'Limited quantity products retrieved successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving limited quantity products',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get best selling products
+     */
+    public function bestSellers(Request $request)
+    {
+        try {
+            $limit = $request->get('limit', 8);
+            
+            // Get products with their total sold quantity from order_items
+            $products = Product::with('category')
+                ->where('is_available', true)
+                ->withCount(['orderItems as total_sold' => function($query) {
+                    $query->whereHas('order', function($orderQuery) {
+                        $orderQuery->whereIn('status', ['paid', 'shipped', 'delivered']);
+                    });
+                }])
+                ->orderBy('total_sold', 'desc')
+                ->limit($limit)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $products,
+                'message' => 'Best selling products retrieved successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving best selling products',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get new arrivals (recently added products)
+     */
+    public function newArrivals(Request $request)
+    {
+        try {
+            $limit = $request->get('limit', 8);
+            $daysAgo = $request->get('days', 30); // Products added within last 30 days
+            
+            $products = Product::with('category')
+                ->where('is_available', true)
+                ->where('created_at', '>=', now()->subDays($daysAgo))
+                ->orderBy('created_at', 'desc')
+                ->limit($limit)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $products,
+                'message' => 'New arrivals retrieved successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving new arrivals',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get products by category
      */
     public function byCategory(string $categorySlug, Request $request)
