@@ -72,6 +72,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/end', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'endChat']);
         Route::get('/settings', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'getSettings']);
     });
+
+        // Product Comments (Public)
+    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'index']);
+    Route::post('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'store']);
+    
     
     // Payments
     Route::get('/payments/methods', [\App\Http\Controllers\Api\Customer\PaymentController::class, 'getPaymentMethods']);
@@ -277,10 +282,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'productComments']);
     Route::post('/product-comments/bulk-approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'bulkApprove']);
 
-    // Product Comments (Public)
-    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'index']);
-    Route::post('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'store']);
-    
+
     // Payments
     Route::get('/payments', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'index']);
     Route::get('/payments/statistics', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'statistics']);
