@@ -451,6 +451,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/home-banner', [\App\Http\Controllers\Api\Admin\HomeBannerController::class, 'show']);
     Route::put('/home-banner', [\App\Http\Controllers\Api\Admin\HomeBannerController::class, 'update']);
     
+    // Home Media (Admin)
+    Route::get('/home-media', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'index']);
+    Route::post('/home-media', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'store']);
+    Route::get('/home-media/{id}', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'show']);
+    Route::post('/home-media/{id}', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'update']);
+    Route::delete('/home-media/{id}', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'destroy']);
+    Route::post('/home-media/reorder', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'reorder']);
+    Route::put('/home-media/{id}/toggle-active', [\App\Http\Controllers\Api\Admin\HomeMediaController::class, 'toggleActive']);
+    
     // Product Discounts Management
     Route::get('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'index']);
     Route::post('/product-discounts', [\App\Http\Controllers\Api\Admin\ProductDiscountController::class, 'store']);
