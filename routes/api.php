@@ -46,8 +46,8 @@ Route::prefix('v1')->group(function () {
     // Orders & Checkout
     Route::post('/checkout/create-order', [\App\Http\Controllers\Api\OrderController::class, 'createOrder']);
     Route::post('/checkout/calculate-total', [\App\Http\Controllers\Api\OrderController::class, 'calculateTotal']);
-    Route::post('/checkout/validate-discount', [\App\Http\Controllers\Api\OrderController::class, 'validateDiscount']);
     Route::post('/checkout/check-customer-discount', [\App\Http\Controllers\Api\OrderController::class, 'checkCustomerDiscount']);
+    Route::post('/checkout/validate-discount', [\App\Http\Controllers\Api\OrderController::class, 'validateDiscount']);
     Route::get('/orders/{orderNumber}', [\App\Http\Controllers\Api\OrderController::class, 'show']);
     Route::get('/orders/{orderNumber}/track', [\App\Http\Controllers\Api\OrderController::class, 'trackOrder']);
     Route::get('/orders/{orderNumber}/details', [\App\Http\Controllers\Api\OrderController::class, 'getOrderDetails']);
@@ -110,6 +110,16 @@ Route::prefix('v1')->group(function () {
     
     // Home Banner (Public)
     Route::get('/home-banner', [\App\Http\Controllers\Api\HomeBannerController::class, 'show']);
+    
+    // Abandoned Carts (Public - for frontend sync)
+    Route::prefix('abandoned-carts')->group(function () {
+        Route::post('/sync', [\App\Http\Controllers\Api\AbandonedCartController::class, 'sync']);
+        Route::delete('/{sessionId}', [\App\Http\Controllers\Api\AbandonedCartController::class, 'delete']);
+        Route::post('/mark-converted', [\App\Http\Controllers\Api\AbandonedCartController::class, 'markConverted']);
+    });
+    
+    // Home Media (Public)
+    Route::get('/home-media', [\App\Http\Controllers\Api\HomeMediaController::class, 'index']);
     
     // Shipping Cost (Public)
     Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
