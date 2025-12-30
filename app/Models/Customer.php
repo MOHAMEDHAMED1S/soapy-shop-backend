@@ -57,6 +57,22 @@ class Customer extends Model
         return $this->hasOne(Order::class)->latest();
     }
 
+       /**
+     * Get the active discount for the customer.
+     */
+    public function activeDiscount(): HasOne
+    {
+        return $this->hasOne(CustomerDiscount::class)->where('is_active', true);
+    }
+
+    /**
+     * Get the active discount for the customer.
+     */
+    public function getActiveDiscount(): ?CustomerDiscount
+    {
+        return $this->activeDiscount;
+    }
+    
     /**
      * Get the customer's full name.
      */

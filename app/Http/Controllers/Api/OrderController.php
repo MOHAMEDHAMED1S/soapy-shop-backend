@@ -111,7 +111,21 @@ class OrderController extends Controller
             $discountAmount = 0;
             $discountCode = null;
             $freeShipping = false;
+            $customerDiscountApplied = null;
 
+            // First, check for customer permanent discount (auto-applied by phone)
+            $customerPermanentDiscount = $this->discountService->getCustomerPermanentDiscount(
+                $request->customer_phone,
+                $subtotalAmount
+            );
+
+            if ($customerPermanentDiscount) {
+                $discountAmount = $customerPermanentDiscount['discount_amount'];
+                $freeShipping = $customerPermanentDiscount['free_shipping'];
+                $customerDiscountApplied = $customerPermanentDiscount;
+            }
+
+            // Then, check for discount code (can stack - code discount + customer free shipping, etc.)
             if ($request->has('discount_code') && $request->discount_code) {
                 $discountResult = $this->discountService->validateAndApplyDiscountCode(
                     $request->discount_code,
@@ -131,8 +145,21 @@ class OrderController extends Controller
                 }
 
                 $discountCode = $discountResult['discount_code'];
-                $discountAmount = $discountResult['discount_amount'];
-                $freeShipping = $discountCode->type === 'free_shipping';
+                
+                // If customer already has a discount, only apply code if it's better OR is free_shipping
+                if ($customerDiscountApplied) {
+                    // If code provides free_shipping, add it
+                    if ($discountCode->type === 'free_shipping') {
+                        $freeShipping = true;
+                    }
+                    // If code provides better discount, use it instead
+                    elseif ($discountResult['discount_amount'] > $discountAmount) {
+                        $discountAmount = $discountResult['discount_amount'];
+                    }
+                } else {
+                    $discountAmount = $discountResult['discount_amount'];
+                    $freeShipping = $discountCode->type === 'free_shipping';
+                }
             }
 
             // Extract country code from request, default to KW
@@ -1062,6 +1089,63 @@ class OrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error retrieving orders',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+        /**
+     * Check if a customer has a permanent discount by phone number.
+     * This is called from checkout page to show the discount before order creation.
+     */
+    public function checkCustomerDiscount(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'customer_phone' => 'required|string|max:20',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم الهاتف مطلوب',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $customerDiscount = \App\Models\CustomerDiscount::findByPhone($request->customer_phone);
+
+            if (!$customerDiscount) {
+                return response()->json([
+                    'success' => true,
+                    'has_discount' => false,
+                    'message' => 'لا يوجد خصم مخصص لهذا العميل'
+                ]);
+            }
+
+            // Return discount details
+            return response()->json([
+                'success' => true,
+                'has_discount' => true,
+                'discount' => [
+                    'type' => $customerDiscount->type,
+                    'value' => $customerDiscount->value,
+                    'minimum_order_amount' => $customerDiscount->minimum_order_amount,
+                    'free_shipping' => $customerDiscount->type === 'free_shipping',
+                    'type_label' => $customerDiscount->getTypeLabel(),
+                    'message' => match($customerDiscount->type) {
+                        'percentage' => "لديك خصم دائم بنسبة {$customerDiscount->value}%",
+                        'fixed_amount' => "لديك خصم دائم بقيمة {$customerDiscount->value} د.ك",
+                        'free_shipping' => 'لديك شحن مجاني دائم',
+                        default => 'لديك خصم دائم خاص بك',
+                    },
+                ],
+                'message' => 'تم العثور على خصم مخصص لك'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء التحقق من الخصم',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -110,7 +110,9 @@ class DiscountService
             // Calculate discount amount
             $discountAmount = $discountCode->calculateDiscountAmount($orderAmount);
 
-            if ($discountAmount <= 0) {
+            // For free_shipping type, discountAmount is 0 (shipping is handled separately)
+            // So we skip the amount check for free_shipping codes
+            if ($discountCode->type !== 'free_shipping' && $discountAmount <= 0) {
                 return [
                     'success' => false,
                     'message' => 'لا يمكن تطبيق هذا الكود على هذا الطلب',
@@ -124,7 +126,9 @@ class DiscountService
                 'discount_amount' => $discountAmount,
                 'order_amount_before_discount' => $orderAmount,
                 'order_amount_after_discount' => $orderAmount - $discountAmount,
-                'message' => 'تم تطبيق كود الخصم بنجاح'
+                'message' => $discountCode->type === 'free_shipping' 
+                    ? 'تم تطبيق كود الشحن المجاني بنجاح' 
+                    : 'تم تطبيق كود الخصم بنجاح'
             ];
 
         } catch (\Exception $e) {
@@ -513,5 +517,45 @@ class DiscountService
             'data' => $discountCodes,
             'message' => 'تم جلب أكواد الخصم بنجاح'
         ];
+    }
+
+    /**
+     * Get permanent discount for a customer by phone number.
+     * This is auto-applied without needing a discount code.
+     */
+    public function getCustomerPermanentDiscount(string $phone, float $orderAmount): ?array
+    {
+        try {
+            $customerDiscount = \App\Models\CustomerDiscount::findByPhone($phone);
+            
+            if (!$customerDiscount) {
+                return null;
+            }
+
+            if (!$customerDiscount->isApplicable($orderAmount)) {
+                return null;
+            }
+
+            $discountAmount = $customerDiscount->calculateDiscountAmount($orderAmount);
+            $freeShipping = $customerDiscount->providesFreeShipping();
+
+            return [
+                'customer_discount_id' => $customerDiscount->id,
+                'type' => $customerDiscount->type,
+                'value' => $customerDiscount->value,
+                'discount_amount' => $discountAmount,
+                'free_shipping' => $freeShipping,
+                'customer_id' => $customerDiscount->customer_id,
+                'message' => match($customerDiscount->type) {
+                    'percentage' => "تم تطبيق خصم {$customerDiscount->value}% الخاص بك",
+                    'fixed_amount' => "تم تطبيق خصم {$customerDiscount->value} د.ك الخاص بك",
+                    'free_shipping' => 'تم تطبيق الشحن المجاني الخاص بك',
+                    default => 'تم تطبيق الخصم الخاص بك',
+                }
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error getting customer permanent discount: ' . $e->getMessage());
+            return null;
+        }
     }
 }

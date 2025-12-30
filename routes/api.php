@@ -28,10 +28,26 @@ Route::prefix('v1')->group(function () {
     Route::get('/categories/tree', [\App\Http\Controllers\Api\CategoryController::class, 'tree']);
     Route::get('/categories/{slug}', [\App\Http\Controllers\Api\CategoryController::class, 'show']);
     
+
+    // Product Comments Management
+    Route::get('/product-comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'index']);
+    Route::get('/product-comments/statistics', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'statistics']);
+    Route::get('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'show']);
+    Route::put('/product-comments/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'approve']);
+    Route::put('/product-comments/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'reject']);
+    Route::delete('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'destroy']);
+    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'productComments']);
+    Route::post('/product-comments/bulk-approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'bulkApprove']);
+
+    // Product Comments (Public)
+    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'index']);
+    Route::post('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'store']);
+    
     // Orders & Checkout
     Route::post('/checkout/create-order', [\App\Http\Controllers\Api\OrderController::class, 'createOrder']);
     Route::post('/checkout/calculate-total', [\App\Http\Controllers\Api\OrderController::class, 'calculateTotal']);
     Route::post('/checkout/validate-discount', [\App\Http\Controllers\Api\OrderController::class, 'validateDiscount']);
+    Route::post('/checkout/check-customer-discount', [\App\Http\Controllers\Api\OrderController::class, 'checkCustomerDiscount']);
     Route::get('/orders/{orderNumber}', [\App\Http\Controllers\Api\OrderController::class, 'show']);
     Route::get('/orders/{orderNumber}/track', [\App\Http\Controllers\Api\OrderController::class, 'trackOrder']);
     Route::get('/orders/{orderNumber}/details', [\App\Http\Controllers\Api\OrderController::class, 'getOrderDetails']);
@@ -465,6 +481,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::put('/users/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\UserController::class, 'toggleStatus']);
     Route::put('/users/{id}/change-password', [\App\Http\Controllers\Api\Admin\UserController::class, 'changePassword']);
     
+    // Customer Discounts (Permanent discounts assigned to specific customers)
+    Route::get('/customer-discounts', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'index']);
+    Route::get('/customer-discounts/customers', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'customers']);
+    Route::get('/customer-discounts/statistics', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'statistics']);
+    Route::post('/customer-discounts', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'store']);
+    Route::put('/customer-discounts/{id}', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'update']);
+    Route::delete('/customer-discounts/{id}', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'destroy']);
+    Route::post('/customer-discounts/{id}/toggle', [\App\Http\Controllers\Api\Admin\CustomerDiscountController::class, 'toggle']);
+
     // Data Export System (Admin)
     Route::prefix('exports')->group(function () {
         Route::post('/products', [\App\Http\Controllers\Api\ExportController::class, 'exportProducts']);
