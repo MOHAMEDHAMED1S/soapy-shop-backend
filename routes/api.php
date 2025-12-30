@@ -19,6 +19,9 @@ Route::prefix('v1')->group(function () {
     // Products
     Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'index']);
     Route::get('/products/featured', [\App\Http\Controllers\Api\ProductController::class, 'featured']);
+    Route::get('/products/limited-quantity', [\App\Http\Controllers\Api\ProductController::class, 'limitedQuantity']);
+    Route::get('/products/best-sellers', [\App\Http\Controllers\Api\ProductController::class, 'bestSellers']);
+    Route::get('/products/new-arrivals', [\App\Http\Controllers\Api\ProductController::class, 'newArrivals']);
     Route::get('/products/feed', [\App\Http\Controllers\Api\ProductFeedController::class, 'rss']);
     Route::get('/products/{identifier}', [\App\Http\Controllers\Api\ProductController::class, 'show']);
     Route::get('/categories/{categorySlug}/products', [\App\Http\Controllers\Api\ProductController::class, 'byCategory']);
