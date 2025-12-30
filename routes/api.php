@@ -280,7 +280,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::put('/order-management/{id}/update-status', [\App\Http\Controllers\Api\Admin\OrderManagementController::class, 'updateStatus']);
     Route::post('/order-management/bulk-update-status', [\App\Http\Controllers\Api\Admin\OrderManagementController::class, 'bulkUpdateStatus']);
     
-        // Product Comments Management
+        // Abandoned Carts Management
+    Route::get('/abandoned-carts', [\App\Http\Controllers\Api\Admin\AdminAbandonedCartController::class, 'index']);
+    Route::get('/abandoned-carts/statistics', [\App\Http\Controllers\Api\Admin\AdminAbandonedCartController::class, 'statistics']);
+    Route::get('/abandoned-carts/{id}', [\App\Http\Controllers\Api\Admin\AdminAbandonedCartController::class, 'show']);
+    Route::delete('/abandoned-carts/{id}', [\App\Http\Controllers\Api\Admin\AdminAbandonedCartController::class, 'destroy']);
+    Route::post('/abandoned-carts/{id}/mark-reminded', [\App\Http\Controllers\Api\Admin\AdminAbandonedCartController::class, 'markReminded']);
+    Route::post('/abandoned-carts/cleanup', [\App\Http\Controllers\Api\Admin\AdminAbandonedCartController::class, 'cleanup']);
+
+    // Product Comments Management
     Route::get('/product-comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'index']);
     Route::get('/product-comments/statistics', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'statistics']);
     Route::get('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'show']);
