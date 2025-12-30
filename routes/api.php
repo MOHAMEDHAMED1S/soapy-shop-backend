@@ -29,20 +29,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/categories/{slug}', [\App\Http\Controllers\Api\CategoryController::class, 'show']);
     
 
-    // Product Comments Management
-    Route::get('/product-comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'index']);
-    Route::get('/product-comments/statistics', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'statistics']);
-    Route::get('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'show']);
-    Route::put('/product-comments/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'approve']);
-    Route::put('/product-comments/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'reject']);
-    Route::delete('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'destroy']);
-    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'productComments']);
-    Route::post('/product-comments/bulk-approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'bulkApprove']);
 
-    // Product Comments (Public)
-    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'index']);
-    Route::post('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'store']);
-    
     // Orders & Checkout
     Route::post('/checkout/create-order', [\App\Http\Controllers\Api\OrderController::class, 'createOrder']);
     Route::post('/checkout/calculate-total', [\App\Http\Controllers\Api\OrderController::class, 'calculateTotal']);
@@ -120,7 +107,7 @@ Route::prefix('v1')->group(function () {
     
     // Home Media (Public)
     Route::get('/home-media', [\App\Http\Controllers\Api\HomeMediaController::class, 'index']);
-    
+
     // Shipping Cost (Public)
     Route::get('/shipping/cost', [\App\Http\Controllers\ShippingController::class, 'getCost']);
     Route::post('/shipping/calculate', [\App\Http\Controllers\Api\ShippingCalculationController::class, 'calculate']);
@@ -279,6 +266,20 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/order-management/{id}/timeline', [\App\Http\Controllers\Api\Admin\OrderManagementController::class, 'timeline']);
     Route::put('/order-management/{id}/update-status', [\App\Http\Controllers\Api\Admin\OrderManagementController::class, 'updateStatus']);
     Route::post('/order-management/bulk-update-status', [\App\Http\Controllers\Api\Admin\OrderManagementController::class, 'bulkUpdateStatus']);
+    
+        // Product Comments Management
+    Route::get('/product-comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'index']);
+    Route::get('/product-comments/statistics', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'statistics']);
+    Route::get('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'show']);
+    Route::put('/product-comments/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'approve']);
+    Route::put('/product-comments/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'reject']);
+    Route::delete('/product-comments/{id}', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'destroy']);
+    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'productComments']);
+    Route::post('/product-comments/bulk-approve', [\App\Http\Controllers\Api\Admin\AdminProductCommentController::class, 'bulkApprove']);
+
+    // Product Comments (Public)
+    Route::get('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'index']);
+    Route::post('/products/{productId}/comments', [\App\Http\Controllers\Api\ProductCommentController::class, 'store']);
     
     // Payments
     Route::get('/payments', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'index']);
