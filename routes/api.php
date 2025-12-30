@@ -207,6 +207,11 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::options('/order-management/{id}/timeline', function () { return response('', 204); });
     Route::options('/order-management/{id}/update-status', function () { return response('', 204); });
     Route::options('/order-management/bulk-update-status', function () { return response('', 204); });
+    Route::options('/abandoned-carts', function () { return response('', 204); });
+    Route::options('/abandoned-carts/statistics', function () { return response('', 204); });
+    Route::options('/abandoned-carts/{id}', function () { return response('', 204); });
+    Route::options('/abandoned-carts/{id}/mark-reminded', function () { return response('', 204); });
+    Route::options('/abandoned-carts/cleanup', function () { return response('', 204); });
     Route::options('/payments', function () { return response('', 204); });
     Route::options('/payments/statistics', function () { return response('', 204); });
     Route::options('/payments/{id}', function () { return response('', 204); });
