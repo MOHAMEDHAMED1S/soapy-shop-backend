@@ -374,6 +374,76 @@ class AnalyticsService
     }
 
     /**
+     * Get orders grouped by country
+     */
+    public function getOrdersByCountry(int $period = 30): array
+    {
+        $startDate = Carbon::now()->subDays($period);
+
+        // Country name mapping
+        $countryNames = [
+            'KW' => 'Kuwait',
+            'SA' => 'Saudi Arabia',
+            'AE' => 'United Arab Emirates',
+            'BH' => 'Bahrain',
+            'QA' => 'Qatar',
+            'OM' => 'Oman',
+        ];
+
+        // Country flag emojis
+        $countryFlags = [
+            'KW' => '🇰🇼',
+            'SA' => '🇸🇦',
+            'AE' => '🇦🇪',
+            'BH' => '🇧🇭',
+            'QA' => '🇶🇦',
+            'OM' => '🇴🇲',
+        ];
+
+        // Get orders grouped by country - only paid/completed orders
+        $ordersByCountry = Order::where('created_at', '>=', $startDate)
+            ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
+            ->selectRaw('
+                COALESCE(country_code, "Unknown") as country_code,
+                COUNT(*) as orders_count,
+                SUM(total_amount) as total_revenue,
+                AVG(total_amount) as avg_order_value
+            ')
+            ->groupBy('country_code')
+            ->orderBy('total_revenue', 'desc')
+            ->get();
+
+        // Calculate total for percentages
+        $totalOrders = $ordersByCountry->sum('orders_count');
+        $totalRevenue = $ordersByCountry->sum('total_revenue');
+
+        // Format the data
+        $countryData = $ordersByCountry->map(function ($item) use ($countryNames, $countryFlags, $totalOrders, $totalRevenue) {
+            $code = $item->country_code ?? 'Unknown';
+            return [
+                'country_code' => $code,
+                'country_name' => $countryNames[$code] ?? $code,
+                'country_flag' => $countryFlags[$code] ?? '🌍',
+                'orders_count' => (int) $item->orders_count,
+                'total_revenue' => round((float) $item->total_revenue, 3),
+                'avg_order_value' => round((float) $item->avg_order_value, 3),
+                'orders_percentage' => $totalOrders > 0 ? round(($item->orders_count / $totalOrders) * 100, 1) : 0,
+                'revenue_percentage' => $totalRevenue > 0 ? round(($item->total_revenue / $totalRevenue) * 100, 1) : 0,
+            ];
+        })->toArray();
+
+        return [
+            'countries' => $countryData,
+            'summary' => [
+                'total_countries' => count($countryData),
+                'total_orders' => $totalOrders,
+                'total_revenue' => round($totalRevenue, 3),
+            ],
+            'period' => $period
+        ];
+    }
+
+    /**
      * Export data
      */
     public function exportData(string $type, int $period, string $format = 'json'): array

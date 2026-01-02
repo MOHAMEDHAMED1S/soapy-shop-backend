@@ -119,7 +119,7 @@ return redirect()->away(...);
 ```php
 DB::commit();
 
-// جدولة للتنفيذ في الخلفية ⚡
+// جدولة للتنفيذ في الخلفية 
 AsyncHelper::runMultipleTasks([
     'email_notification' => function () use ($notificationService, $orderId) {
         $order = Order::find($orderId);
@@ -141,7 +141,7 @@ AsyncHelper::runMultipleTasks([
     }
 ]);
 
-// يتم إرسال الاستجابة فوراً ⚡
+// يتم إرسال الاستجابة فوراً 
 return redirect()->away(...);
 ```
 
@@ -236,7 +236,7 @@ Callback Response Time: ~3-5 ثوانٍ (ينتظر الإشعارات)
 
 **بعد التحديث:**
 ```
-Callback Response Time: ~300-500ms ⚡
+Callback Response Time: ~300-500ms 
 Background Tasks: تنفذ بعد إرسال الاستجابة
 ```
 

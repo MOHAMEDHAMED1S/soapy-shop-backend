@@ -21,7 +21,7 @@ rm -rf storage/framework/sessions/*
 rm -rf storage/framework/views/*
 
 # 3. Optimize for production
-echo "⚡ Optimizing for production..."
+echo " Optimizing for production..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

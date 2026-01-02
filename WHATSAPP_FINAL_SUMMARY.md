@@ -240,7 +240,7 @@ const updateAdminPhones = async (phones: string[]) => {
 
 ---
 
-## ⚡ الأداء
+##  الأداء
 
 ✅ **Cache System:** الإعدادات تُخزن مؤقتاً لمدة ساعة  
 ✅ **Auto Clear:** الـ Cache يُمسح تلقائياً عند التحديث  

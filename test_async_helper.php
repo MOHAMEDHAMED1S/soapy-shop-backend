@@ -35,7 +35,7 @@ AsyncHelper::runAfterResponse(function () {
 $responseTime = (microtime(true) - $startTime) * 1000;
 
 echo "✅ تم جدولة المهمة للتنفيذ في الخلفية\n";
-echo "⚡ Response Time: " . round($responseTime, 2) . "ms\n";
+echo " Response Time: " . round($responseTime, 2) . "ms\n";
 echo "📝 المهمة ستنفذ بعد انتهاء هذا السكريبت\n\n";
 
 // ===================================
@@ -67,7 +67,7 @@ AsyncHelper::runMultipleTasks([
 $responseTime = (microtime(true) - $startTime) * 1000;
 
 echo "✅ تم جدولة 3 مهام للتنفيذ في الخلفية\n";
-echo "⚡ Response Time: " . round($responseTime, 2) . "ms\n";
+echo " Response Time: " . round($responseTime, 2) . "ms\n";
 echo "📝 المهام ستنفذ بعد انتهاء هذا السكريبت\n\n";
 
 // ===================================

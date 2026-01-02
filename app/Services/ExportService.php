@@ -182,7 +182,7 @@ class ExportService
      */
     private function getOrdersData(array $filters = []): array
     {
-        $query = Order::with(['customer', 'orderItems']);
+        $query = Order::with(['customer', 'orderItems.product', 'payment']);
 
         if (isset($filters['limit'])) {
             $query->limit($filters['limit']);
@@ -204,21 +204,64 @@ class ExportService
             $query->where('total_amount', '<=', $filters['total_max']);
         }
 
-        return $query->get()->map(function ($order) {
+        if (isset($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('status', $filters['status']);
+        }
+
+        // Country name mapping
+        $countryNames = [
+            'KW' => 'Kuwait',
+            'SA' => 'Saudi Arabia',
+            'AE' => 'United Arab Emirates',
+            'BH' => 'Bahrain',
+            'QA' => 'Qatar',
+            'OM' => 'Oman',
+        ];
+
+        return $query->orderBy('created_at', 'desc')->get()->map(function ($order) use ($countryNames) {
+            // Extract shipping address details
+            $shippingAddress = is_array($order->shipping_address) ? $order->shipping_address : [];
+            $shippingCity = $shippingAddress['city'] ?? '';
+            $shippingGovernorate = $shippingAddress['governorate'] ?? '';
+            $shippingStreet = $shippingAddress['street'] ?? '';
+            
+            // Get items details
+            $itemsDetails = $order->orderItems->map(function ($item) {
+                $productName = $item->product ? $item->product->title : ($item->product_title ?? 'Unknown');
+                return "{$productName} x{$item->quantity}";
+            })->implode(', ');
+
+            // Get payment status
+            $paymentStatus = $order->payment ? $order->payment->status : 'unpaid';
+
+            // Get country name
+            $countryCode = $order->country_code ?? '';
+            $countryName = $countryNames[$countryCode] ?? $countryCode;
+
             return [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
                 'customer_name' => $order->customer->name ?? $order->customer_name,
                 'customer_email' => $order->customer->email ?? $order->customer_email,
                 'customer_phone' => $order->customer_phone,
+                'country_code' => $countryCode,
+                'country_name' => $countryName,
                 'status' => $order->status,
+                'payment_status' => $paymentStatus,
+                'subtotal_amount' => $order->subtotal_amount,
+                'discount_code' => $order->discount_code ?? '',
+                'discount_amount' => $order->discount_amount,
+                'shipping_amount' => $order->shipping_amount,
                 'total_amount' => $order->total_amount,
                 'currency' => $order->currency,
-                'discount_amount' => $order->discount_amount,
-                'subtotal_amount' => $order->subtotal_amount,
-                'shipping_amount' => $order->shipping_amount,
                 'items_count' => $order->orderItems->count(),
-                'shipping_address' => is_array($order->shipping_address) ? $this->formatAddress($order->shipping_address) : $order->shipping_address,
+                'items_details' => $itemsDetails,
+                'shipping_city' => $shippingCity,
+                'shipping_governorate' => $shippingGovernorate,
+                'shipping_street' => $shippingStreet,
+                'shipping_address_full' => is_array($order->shipping_address) ? $this->formatAddress($order->shipping_address) : $order->shipping_address,
+                'notes' => $order->notes ?? '',
+                'tracking_number' => $order->tracking_number ?? '',
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
             ];

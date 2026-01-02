@@ -123,10 +123,10 @@ class AbandonedCart extends Model
         })->implode("\n");
 
         $message = "مرحباً {$this->customer_name} 👋\n\n";
-        $message .= "لاحظنا أنك تركت سلة تسوق بقيمة {$this->cart_total} {$this->currency} في متجر خيال!\n\n";
+        $message .= "لاحظنا أنك تركت سلة تسوق بقيمة {$this->cart_total} {$this->currency} في متجر Soapy!\n\n";
         $message .= "المنتجات:\n{$productsList}\n\n";
         $message .= "أكمل طلبك الآن واستمتع بتجربة تسوق مميزة ✨\n\n";
-        $message .= "رابط المتجر: https://khayallkw.com";
+        $message .= "رابط المتجر: https://Soapy-bubbles.com";
 
         $encodedMessage = urlencode($message);
 

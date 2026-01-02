@@ -117,6 +117,103 @@ class ReportController extends Controller
     }
 
     /**
+     * Get orders grouped by country
+     */
+    public function ordersByCountry(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'period' => 'nullable|integer|min:1|max:365',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $period = $request->get('period', 30);
+
+            // Country name mapping
+            $countryNames = [
+                'KW' => 'Kuwait',
+                'SA' => 'Saudi Arabia',
+                'AE' => 'United Arab Emirates',
+                'BH' => 'Bahrain',
+                'QA' => 'Qatar',
+                'OM' => 'Oman',
+            ];
+
+            // Country flag emojis
+            $countryFlags = [
+                'KW' => '🇰🇼',
+                'SA' => '🇸🇦',
+                'AE' => '🇦🇪',
+                'BH' => '🇧🇭',
+                'QA' => '🇶🇦',
+                'OM' => '🇴🇲',
+            ];
+
+            $startDate = Carbon::now()->subDays($period);
+
+            // Get orders grouped by country
+            $ordersByCountry = Order::where('created_at', '>=', $startDate)
+                ->whereNotIn('status', ['cancelled', 'pending', 'awaiting_payment'])
+                ->selectRaw('
+                    COALESCE(country_code, "Unknown") as country_code,
+                    COUNT(*) as orders_count,
+                    SUM(total_amount) as total_revenue,
+                    AVG(total_amount) as avg_order_value
+                ')
+                ->groupBy('country_code')
+                ->orderBy('total_revenue', 'desc')
+                ->get();
+
+            // Calculate totals
+            $totalOrders = $ordersByCountry->sum('orders_count');
+            $totalRevenue = $ordersByCountry->sum('total_revenue');
+
+            // Format data
+            $countryData = $ordersByCountry->map(function ($item) use ($countryNames, $countryFlags, $totalOrders, $totalRevenue) {
+                $code = $item->country_code ?? 'Unknown';
+                return [
+                    'country_code' => $code,
+                    'country_name' => $countryNames[$code] ?? $code,
+                    'country_flag' => $countryFlags[$code] ?? '🌍',
+                    'orders_count' => (int) $item->orders_count,
+                    'total_revenue' => round((float) $item->total_revenue, 3),
+                    'avg_order_value' => round((float) $item->avg_order_value, 3),
+                    'orders_percentage' => $totalOrders > 0 ? round(($item->orders_count / $totalOrders) * 100, 1) : 0,
+                    'revenue_percentage' => $totalRevenue > 0 ? round(($item->total_revenue / $totalRevenue) * 100, 1) : 0,
+                ];
+            })->toArray();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'countries' => $countryData,
+                    'summary' => [
+                        'total_countries' => count($countryData),
+                        'total_orders' => $totalOrders,
+                        'total_revenue' => round($totalRevenue, 3),
+                    ],
+                    'period' => $period
+                ],
+                'message' => 'Orders by country report generated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating orders by country report',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Generate products report
      */
     public function productsReport(Request $request)

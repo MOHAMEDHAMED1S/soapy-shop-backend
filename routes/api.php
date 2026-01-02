@@ -173,6 +173,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/analytics/customers', [\App\Http\Controllers\Api\ReportController::class, 'getCustomerAnalytics']);
         Route::get('/analytics/products', [\App\Http\Controllers\Api\ReportController::class, 'getProductAnalytics']);
         Route::get('/analytics/orders', [\App\Http\Controllers\Api\ReportController::class, 'getOrderAnalytics']);
+        Route::get('/analytics/orders-by-country', [\App\Http\Controllers\Api\ReportController::class, 'getOrdersByCountry']);
         Route::get('/analytics/seasonal-trends', [\App\Http\Controllers\Api\ReportController::class, 'getSeasonalTrends']);
         
         // Financial reports

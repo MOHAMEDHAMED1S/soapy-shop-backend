@@ -78,7 +78,7 @@ class NotificationStatsCommand extends Command
 
         if ($notificationsByPriority->isNotEmpty()) {
             $this->newLine();
-            $this->info('⚡ By Priority:');
+            $this->info(' By Priority:');
             $this->table(
                 ['Priority', 'Count'],
                 $notificationsByPriority->map(fn($count, $priority) => [$priority, $count])
