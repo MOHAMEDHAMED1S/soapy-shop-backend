@@ -46,6 +46,8 @@ class Product extends Model
         'price_before_discount',
         'is_in_stock',
         'is_low_stock',
+        'has_bogo_offer',
+        'bogo_offer_info',
     ];
 
     /**
@@ -343,5 +345,59 @@ class Product extends Model
             $q->where('has_inventory', false)
               ->orWhere('stock_quantity', '>', 0);
         });
+    }
+
+    /**
+     * Get BOGO offers where this product is the "buy" product.
+     */
+    public function bogoOffersAsBuy(): HasMany
+    {
+        return $this->hasMany(BogoOffer::class, 'buy_product_id');
+    }
+
+    /**
+     * Get BOGO offers where this product is the "get" product.
+     */
+    public function bogoOffersAsGet(): HasMany
+    {
+        return $this->hasMany(BogoOffer::class, 'get_product_id');
+    }
+
+    /**
+     * Check if product has an active BOGO offer.
+     */
+    public function getHasBogoOfferAttribute(): bool
+    {
+        return BogoOffer::active()
+            ->where('buy_product_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Get BOGO offer info for display.
+     */
+    public function getBogoOfferInfoAttribute(): ?array
+    {
+        $offer = BogoOffer::active()
+            ->where('buy_product_id', $this->id)
+            ->with('getProduct')
+            ->orderBy('priority', 'desc')
+            ->first();
+
+        if (!$offer) {
+            return null;
+        }
+
+        return [
+            'id' => $offer->id,
+            'name' => $offer->name,
+            'buy_quantity' => $offer->buy_quantity,
+            'get_quantity' => $offer->get_quantity,
+            'get_product_id' => $offer->get_product_id,
+            'get_product_title' => $offer->getProduct?->title,
+            'is_same_product' => $offer->buy_product_id === $offer->get_product_id,
+            'discount_type' => $offer->get_discount_type,
+            'formatted_offer' => $offer->formatted_offer,
+        ];
     }
 }

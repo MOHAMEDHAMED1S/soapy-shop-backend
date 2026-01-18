@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/checkout/calculate-total', [\App\Http\Controllers\Api\OrderController::class, 'calculateTotal']);
     Route::post('/checkout/check-customer-discount', [\App\Http\Controllers\Api\OrderController::class, 'checkCustomerDiscount']);
     Route::post('/checkout/validate-discount', [\App\Http\Controllers\Api\OrderController::class, 'validateDiscount']);
+    Route::post('/checkout/calculate-bogo', [\App\Http\Controllers\Api\OrderController::class, 'calculateBogo']);
     Route::get('/orders/{orderNumber}', [\App\Http\Controllers\Api\OrderController::class, 'show']);
     Route::get('/orders/{orderNumber}/track', [\App\Http\Controllers\Api\OrderController::class, 'trackOrder']);
     Route::get('/orders/{orderNumber}/details', [\App\Http\Controllers\Api\OrderController::class, 'getOrderDetails']);
@@ -314,6 +315,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::get('/webhooks/statistics', [\App\Http\Controllers\Api\WebhookController::class, 'getWebhookStatistics']);
     Route::post('/webhooks/{id}/retry', [\App\Http\Controllers\Api\WebhookController::class, 'retryWebhook']);
     
+    // Twilio WhatsApp Messaging
+    Route::prefix('twilio-whatsapp')->group(function () {
+        Route::get('/status', [\App\Http\Controllers\Api\Admin\TwilioWhatsAppController::class, 'status']);
+        Route::post('/test', [\App\Http\Controllers\Api\Admin\TwilioWhatsAppController::class, 'testConnection']);
+        Route::post('/send', [\App\Http\Controllers\Api\Admin\TwilioWhatsAppController::class, 'sendMessage']);
+        Route::post('/send-template', [\App\Http\Controllers\Api\Admin\TwilioWhatsAppController::class, 'sendTemplate']);
+        Route::post('/send-order-notification', [\App\Http\Controllers\Api\Admin\TwilioWhatsAppController::class, 'sendOrderNotification']);
+    });
+    
     // Products
     Route::get('/products', [\App\Http\Controllers\Api\Admin\ProductController::class, 'index']);
     Route::post('/products', [\App\Http\Controllers\Api\Admin\ProductController::class, 'store']);
@@ -495,6 +505,23 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'admin'])->group(function () 
     Route::options('/product-discounts/{id}/toggle-status', function () { return response('', 204); });
     Route::options('/product-discounts/{id}/affected-products', function () { return response('', 204); });
     Route::options('/product-discounts/{id}/duplicate', function () { return response('', 204); });
+
+    // BOGO Offers Management
+    Route::get('/bogo-offers', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'index']);
+    Route::post('/bogo-offers', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'store']);
+    Route::get('/bogo-offers/statistics', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'statistics']);
+    Route::get('/bogo-offers/products', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'getProducts']);
+    Route::get('/bogo-offers/{id}', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'show']);
+    Route::put('/bogo-offers/{id}', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'update']);
+    Route::delete('/bogo-offers/{id}', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'destroy']);
+    Route::put('/bogo-offers/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\AdminBogoOfferController::class, 'toggleStatus']);
+    
+    // OPTIONS routes for BOGO offers
+    Route::options('/bogo-offers', function () { return response('', 204); });
+    Route::options('/bogo-offers/statistics', function () { return response('', 204); });
+    Route::options('/bogo-offers/products', function () { return response('', 204); });
+    Route::options('/bogo-offers/{id}', function () { return response('', 204); });
+    Route::options('/bogo-offers/{id}/toggle-status', function () { return response('', 204); });
 
     // Payment Methods Management
     Route::get('/payment-methods', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'index']);

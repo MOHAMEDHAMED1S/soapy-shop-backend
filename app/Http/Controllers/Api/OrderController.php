@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\OrderItem;
 use App\Services\CustomerService;
 use App\Services\DiscountService;
+use App\Services\BogoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +17,13 @@ class OrderController extends Controller
 {
     protected $customerService;
     protected $discountService;
+    protected $bogoService;
 
-    public function __construct(CustomerService $customerService, DiscountService $discountService)
+    public function __construct(CustomerService $customerService, DiscountService $discountService, BogoService $bogoService)
     {
         $this->customerService = $customerService;
         $this->discountService = $discountService;
+        $this->bogoService = $bogoService;
     }
     /**
      * Create a new order (Checkout process)
@@ -105,6 +108,33 @@ class OrderController extends Controller
                         'category' => $product->category->name ?? null,
                     ]
                 ];
+            }
+
+            // Calculate BOGO items and add to weight/snapshots BEFORE shipping calculation
+            $bogoItems = $this->bogoService->calculateBogoForCart($request->items);
+            foreach ($bogoItems as $bogoItem) {
+                $product = Product::find($bogoItem['product_id']);
+                if ($product) {
+                    $productWeight = $product->weight_grams ?? 100;
+                    $totalWeightGrams += $productWeight * $bogoItem['quantity']; // Add to total weight
+                    
+                    // Add to snapshots for saving later
+                    $productSnapshots[] = [
+                        'product_id' => $product->id,
+                        'product_price' => $bogoItem['final_price'], // Should be 0 or discounted
+                        'quantity' => $bogoItem['quantity'],
+                        'is_bogo_item' => true,
+                        'bogo_offer_id' => $bogoItem['offer_id'],
+                        'product_snapshot' => [
+                            'title' => $product->title,
+                            'slug' => $product->slug,
+                            'description' => $product->description,
+                            'short_description' => $product->short_description,
+                            'images' => $product->images,
+                            'bogo_info' => $bogoItem['offer_name']
+                        ]
+                    ];
+                }
             }
 
             // Handle discount code validation and calculation
@@ -221,6 +251,8 @@ class OrderController extends Controller
                 'tracking_number' => $orderNumber,
             ]);
 
+
+
             // Create order items
             foreach ($productSnapshots as $itemData) {
                 OrderItem::create([
@@ -229,6 +261,8 @@ class OrderController extends Controller
                     'product_price' => $itemData['product_price'],
                     'quantity' => $itemData['quantity'],
                     'product_snapshot' => $itemData['product_snapshot'],
+                    'is_bogo_item' => $itemData['is_bogo_item'] ?? false,
+                    'bogo_offer_id' => $itemData['bogo_offer_id'] ?? null,
                 ]);
             }
 
@@ -1146,6 +1180,63 @@ class OrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء التحقق من الخصم',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Calculate BOGO items for cart (public endpoint).
+     */
+    public function calculateBogo(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.quantity' => 'required|integer|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $bogoResult = $this->bogoService->validateCartForBogo($request->items);
+
+            // Transform bogo items for frontend
+            $bogoItems = array_map(function ($item) {
+                return [
+                    'offer_id' => $item['offer_id'],
+                    'offer_name' => $item['offer_name'],
+                    'product_id' => $item['product_id'],
+                    'product_title' => $item['product']->title,
+                    'product_image' => $item['product']->images[0] ?? null,
+                    'quantity' => $item['quantity'],
+                    'original_price' => $item['original_price'],
+                    'final_price' => $item['final_price'],
+                    'is_free' => $item['is_free'],
+                ];
+            }, $bogoResult['bogo_items']);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'has_bogo' => $bogoResult['has_bogo'],
+                    'bogo_items' => $bogoItems,
+                    'total_free_items' => $bogoResult['total_free_items'],
+                    'total_bogo_savings' => round($bogoResult['total_bogo_savings'], 3),
+                ],
+                'message' => $bogoResult['has_bogo'] ? 'BOGO offers applied' : 'No BOGO offers available'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error calculating BOGO',
                 'error' => $e->getMessage()
             ], 500);
         }

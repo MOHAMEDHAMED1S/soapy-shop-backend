@@ -66,6 +66,11 @@ class OrderController extends Controller
                 });
             }
 
+            // Filter by country code
+            if ($request->has('country_code') && $request->country_code && $request->country_code !== 'all') {
+                $query->where('country_code', $request->country_code);
+            }
+
             // Sort
             $sortBy = $request->get('sort_by', 'created_at');
             $sortDirection = $request->get('sort_direction', 'desc');
@@ -260,6 +265,32 @@ class OrderController extends Controller
             // Create admin notification for important status changes
             if (in_array($newStatus, ['paid', 'shipped', 'delivered'])) {
                 $this->notificationService->createOrderNotification($order, "order_{$newStatus}");
+            }
+
+            // Send WhatsApp notification to customer via Twilio
+            if ($oldStatus !== $newStatus) {
+                try {
+                    $twilioService = app(\App\Services\TwilioWhatsAppService::class);
+                    
+                    // Send specific notification based on status
+                    if ($newStatus === 'shipped') {
+                        $twilioService->notifyCustomerOrderShipped($order);
+                    } elseif ($newStatus === 'delivered') {
+                        $twilioService->notifyCustomerOrderDelivered($order);
+                    } else {
+                        $twilioService->notifyCustomerStatusUpdate($order, $newStatus);
+                    }
+                    
+                    \Illuminate\Support\Facades\Log::info('Twilio WhatsApp notification sent for status update', [
+                        'order_id' => $order->id,
+                        'new_status' => $newStatus
+                    ]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send Twilio WhatsApp notification', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
 
             DB::commit();

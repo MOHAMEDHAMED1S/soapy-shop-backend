@@ -15,11 +15,14 @@ class OrderItem extends Model
         'product_price',
         'quantity',
         'product_snapshot',
+        'is_bogo_item',
+        'bogo_offer_id',
     ];
 
     protected $casts = [
         'product_snapshot' => 'array',
         'product_price' => 'decimal:3',
+        'is_bogo_item' => 'boolean',
     ];
 
     /**
